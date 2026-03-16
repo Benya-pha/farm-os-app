@@ -2,16 +2,15 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Farm OS | Smart Agriculture Dashboard</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- นำเข้าฟอนต์ Itim สำหรับความโค้งมน -->
-  <link href="https://fonts.googleapis.com/css2?family=Itim&family=Mitr:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Itim&display=swap" rel="stylesheet">
   
   <style>
-    /* ใช้ฟอนต์ Itim เป็นหลัก */
-    body { font-family: 'Itim', cursive; }
+    body { font-family: 'Itim', cursive; background-color: #FDFCF0; -webkit-tap-highlight-color: transparent; }
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     
@@ -23,36 +22,30 @@
     
     .bar-transition { transition: height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.3s; }
     
-    /* Earth Tone Colors Variables */
-    :root {
-      --earth-beige: #FDFCF0;
-      --earth-sidebar: #EAE4D3;
-      --earth-green: #4A5D23;
-      --earth-brown: #8B5A2B;
-      --earth-accent: #D4A373;
-    }
-    
-    .bg-earth-beige { background-color: var(--earth-beige); }
-    .bg-earth-sidebar { background-color: var(--earth-sidebar); }
-    .text-earth-green { color: var(--earth-green); }
-    .bg-earth-green { background-color: var(--earth-green); }
-    .border-earth-green { border-color: var(--earth-green); }
+    /* Earth Tone Utilities */
+    .bg-earth-beige { background-color: #FDFCF0; }
+    .bg-earth-sidebar { background-color: #EAE4D3; }
+    .bg-earth-green { background-color: #4A5D23; }
+    .text-earth-green { color: #4A5D23; }
+    .border-earth-green { border-color: #4A5D23; }
   </style>
 
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 </head>
-<body class="bg-earth-beige text-[#3E3A34]">
+<body class="text-[#3E3A34] overflow-x-hidden">
   
   <div id="root"></div>
 
   <script type="text/babel">
-    const { useState, useEffect } = React;
+    const { useState, useEffect, useRef } = React;
 
+    // --- Firebase Configuration ---
     const firebaseConfig = {
       apiKey: "AIzaSyDs8yRihR4Vz123JRjEA6SWcF-pw77c-qU",
       authDomain: "m4kul-1.firebaseapp.com",
@@ -66,14 +59,10 @@
     if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
     const auth = firebase.auth();
     
-    // Logo App จาก Google Drive
+    // Direct Image Link for stability
     const APP_LOGO = "https://lh3.googleusercontent.com/d/1Idx_06TR21D44uHQjWC1arrQM0hD4LZ8";
 
     const theme = {
-      bg: 'bg-[#FDFCF0]', sidebar: 'bg-[#EAE4D3]', card: 'bg-white',
-      primary: 'text-[#4A5D23]', primaryBg: 'bg-[#4A5D23]',
-      primaryLight: 'bg-[#8A9A5B]', textMain: 'text-[#3E3A34]',
-      textMuted: 'text-[#7A756C]',
       input: 'bg-white border border-[#D9D1BE] focus:border-[#4A5D23] focus:ring-2 focus:ring-[#4A5D23]/20 outline-none transition-all rounded-2xl px-4 py-3 w-full text-[#3E3A34]'
     };
 
@@ -91,8 +80,8 @@
       ]);
 
       const [plantZones, setPlantZones] = useState([
-        { id: 'A', name: 'ผักสลัด (กรีนโอ๊ค)', moisture: 45, temp: 28, area: '2 ไร่', health: 95, schedule: null },
-        { id: 'B', name: 'มะเขือเทศเชอรี่', moisture: 30, temp: 31, area: '1.5 ไร่', health: 65, schedule: '16:00 (30 นาที)' },
+        { id: 'A', name: 'ผักสลัด (กรีนโอ๊ค)', moisture: 45, temp: 28, health: 95, schedule: null },
+        { id: 'B', name: 'มะเขือเทศเชอรี่', moisture: 30, temp: 31, health: 65, schedule: '16:00 (30 นาที)' },
       ]);
 
       const [soilStats, setSoilStats] = useState({ N: 65, P: 40, K: 55, moisture: 45, pH: 6.5 });
@@ -100,17 +89,20 @@
       const [alerts, setAlerts] = useState([
         { id: 1, type: 'critical', title: 'พบร่องรอยโรคราน้ำค้าง', zone: 'โซน B', time: '10 นาทีที่แล้ว', detail: 'AI ตรวจพบความผิดปกติบนใบ' },
         { id: 2, type: 'warning', title: 'ความชื้นดินต่ำกว่าเกณฑ์', zone: 'โซน B', time: '1 ชั่วโมงที่แล้ว', detail: 'ความชื้นลดลงเหลือ 30%' },
-        { id: 3, type: 'info', title: 'เสร็จสิ้นการรดน้ำ', zone: 'โซน A', time: '2 ชั่วโมงที่แล้ว', detail: 'ระบบทำงานตามรอบปกติ' },
+        { id: 3, type: 'info', title: 'หุ่นยนต์เชื่อมต่อสำเร็จ', zone: 'ระบบ', time: '2 ชั่วโมงที่แล้ว', detail: 'FarmBot-Beta ออนไลน์' },
       ]);
 
       useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
           if (user) {
-            setUserData(prev => ({ ...prev, name: user.displayName || prev.name || 'ผู้ใช้งาน', email: user.email, avatar: user.photoURL || prev.avatar }));
+            setUserData(prev => ({ 
+              ...prev, 
+              name: user.displayName || prev.name || 'ผู้ใช้งาน', 
+              email: user.email,
+              avatar: user.photoURL || prev.avatar
+            }));
             setAuthStatus('logged_in');
-          } else {
-            setAuthStatus('logged_out');
-          }
+          } else { setAuthStatus('logged_out'); }
         });
         return () => unsubscribe();
       }, []);
@@ -122,11 +114,11 @@
       const navigate = (screen) => setCurrentScreen(screen);
 
       return (
-        <div className={`min-h-screen ${theme.bg}`}>
+        <div className="min-h-screen">
           {currentScreen === 'splash' && <SplashScreen onFinish={() => navigate('login')} />}
           {currentScreen === 'login' && <LoginScreen onNext={() => navigate('register')} setUserData={setUserData} userData={userData} />}
           {currentScreen === 'register' && <RegisterScreen userData={userData} setUserData={setUserData} onNext={() => navigate('robot_setup')} />}
-          {currentScreen === 'robot_setup' && <RobotSetup robots={robots} setRobots={setRobots} onNext={() => navigate('dashboard')} />}
+          {currentScreen === 'robot_setup' && <RobotSetup robots={robots} setRobots={setRobots} onNext={() => navigate('dashboard')} onBack={() => navigate('register')} />}
           {currentScreen === 'dashboard' && (
             <FarmOS 
               userData={userData} setUserData={setUserData}
@@ -134,6 +126,7 @@
               plantZones={plantZones} setPlantZones={setPlantZones}
               soilStats={soilStats} setSoilStats={setSoilStats}
               alerts={alerts}
+              setCurrentScreen={setCurrentScreen}
               onLogout={() => auth.signOut().then(() => navigate('login'))} 
             />
           )}
@@ -145,9 +138,9 @@
       useEffect(() => { const timer = setTimeout(onFinish, 2500); return () => clearTimeout(timer); }, [onFinish]);
       return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-earth-beige animate-in fade-in duration-1000">
-          <img src={APP_LOGO} className="w-40 h-40 object-contain mb-6 drop-shadow-xl animate-bounce" alt="Farm OS Logo" />
-          <h1 className="text-5xl font-black text-[#4A5D23] tracking-tighter mb-2">Farm OS</h1>
-          <p className="text-[#8B5A2B] font-bold tracking-[0.2em] uppercase">Operating System</p>
+          <img src={APP_LOGO} className="w-32 h-32 object-contain mb-6 drop-shadow-xl animate-bounce" />
+          <h1 className="text-4xl font-black text-[#4A5D23] tracking-tighter mb-1">Farm OS</h1>
+          <p className="text-[#8B5A2B] font-bold text-sm tracking-[0.3em] uppercase">Operating System</p>
         </div>
       );
     };
@@ -167,9 +160,9 @@
           .catch((error) => {
             setIsLoading(false);
             if (error.code === 'auth/unauthorized-domain' || error.code === 'auth/operation-not-supported-in-this-environment') {
-              setErrorMsg("โหมดพรีวิวไม่รองรับการล็อกอินจริง \nระบบจะจำลองผู้ใช้ให้ชั่วคราว...");
+              setErrorMsg("โหมดพรีวิวไม่รองรับ Google Login ระบบจะจำลองข้อมูลให้...");
               setTimeout(() => {
-                setUserData({ ...userData, name: 'คุณสมชาย (Preview)', email: 'test@farm.com' });
+                setUserData({ ...userData, name: 'คุณสมชาย (จำลอง)', email: 'test@farm.com' });
                 onNext();
               }, 2000);
             } else { setErrorMsg(error.message); }
@@ -177,14 +170,14 @@
       };
 
       return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-6 relative">
+        <div className="flex flex-col items-center justify-center min-h-screen p-6">
           <div className="w-full max-w-md bg-white p-10 rounded-[3rem] shadow-2xl border border-gray-100 text-center animate-in zoom-in duration-500">
-            <img src={APP_LOGO} className="w-24 h-24 mx-auto mb-6" />
-            <h2 className="text-4xl font-black text-earth-green mb-2 tracking-tight">เข้าสู่ระบบ</h2>
-            <p className="text-gray-400 mb-10 font-bold">เพื่อเริ่มต้นจัดการฟาร์มอัจฉริยะ</p>
+            <img src={APP_LOGO} className="w-20 h-20 mx-auto mb-6" />
+            <h2 className="text-3xl font-black text-[#4A5D23] mb-2 tracking-tight">เข้าสู่ระบบ</h2>
+            <p className="text-gray-400 mb-10 font-bold">Smart Farming Ecosystem</p>
             <div className="space-y-4">
-              <button onClick={handleGoogleLogin} className="w-full bg-white border-2 border-gray-200 text-gray-700 py-4 rounded-[1.5rem] font-black hover:bg-gray-50 flex items-center justify-center gap-3 transition-all shadow-sm">🌐 ล็อกอินด้วย Google</button>
-              <button onClick={onNext} className="w-full bg-[#4A5D23] text-white py-4 rounded-[1.5rem] font-black hover:bg-[#3a4a1c] transition-all shadow-xl shadow-green-100">📱 เบอร์โทรศัพท์ / อีเมล</button>
+              <button onClick={handleGoogleLogin} className="w-full bg-white border-2 border-gray-100 text-gray-700 py-4 rounded-[1.5rem] font-black hover:bg-gray-50 flex items-center justify-center gap-3 shadow-sm">🌐 ล็อกอินด้วย Google</button>
+              <button onClick={onNext} className="w-full bg-[#4A5D23] text-white py-4 rounded-[1.5rem] font-black hover:bg-[#3a4a1c] shadow-xl shadow-green-100 transition-all">📱 เบอร์มือถือ / อีเมล</button>
             </div>
             {errorMsg && <p className="mt-6 text-orange-600 text-sm whitespace-pre-line font-bold">{errorMsg}</p>}
           </div>
@@ -192,28 +185,40 @@
       );
     };
 
-    const RegisterScreen = ({ userData, setUserData, onNext }) => (
-      <div className="flex flex-col items-center justify-center min-h-screen p-4">
-        <div className="w-full max-w-md bg-white p-10 rounded-[3rem] shadow-2xl border border-gray-100 text-center">
-          <h2 className="text-3xl font-black text-earth-green mb-8">ตั้งค่าโปรไฟล์</h2>
-          <div className="relative w-28 h-28 mx-auto mb-10">
-            <div className="w-full h-full rounded-full overflow-hidden border-4 border-earth-green shadow-xl bg-gray-50">
-              <img src={userData.avatar} className="w-full h-full object-cover" />
+    const RegisterScreen = ({ userData, setUserData, onNext }) => {
+      const fileInputRef = useRef(null);
+      const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (ev) => setUserData({...userData, avatar: ev.target.result});
+          reader.readAsDataURL(file);
+        }
+      };
+      return (
+        <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-earth-beige">
+          <div className="w-full max-w-md bg-white p-10 rounded-[3rem] shadow-2xl border border-gray-100 text-center">
+            <h2 className="text-2xl font-black text-[#4A5D23] mb-8">ตั้งค่าโปรไฟล์</h2>
+            <div className="relative w-28 h-28 mx-auto mb-6 group">
+              <img src={userData.avatar} className="w-full h-full rounded-full border-4 border-[#4A5D23] shadow-xl object-cover" />
+              <button onClick={() => fileInputRef.current.click()} className="absolute bottom-0 right-0 bg-white p-2 rounded-full shadow-lg border border-gray-100">📷</button>
+              <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleImageUpload} />
             </div>
-            <button onClick={() => setUserData({...userData, avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${Math.random()}`})} className="absolute -bottom-2 -right-2 bg-white p-2 rounded-full shadow-lg border border-gray-100 hover:scale-110 transition-transform">🎲</button>
+            <button onClick={() => setUserData({...userData, avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${Math.random()}`})} className="text-xs text-blue-500 font-bold mb-8 block">🎲 สุ่มรูปใหม่</button>
+            <div className="space-y-4 text-left">
+              <div><label className="text-[10px] font-bold text-gray-400 ml-3 uppercase tracking-widest">ชื่อเล่น/นามแฝง</label><input type="text" className={theme.input} value={userData.name} onChange={e => setUserData({...userData, name: e.target.value})} /></div>
+              <div><label className="text-[10px] font-bold text-gray-400 ml-3 uppercase tracking-widest">ชื่อฟาร์ม</label><input type="text" className={theme.input} value={userData.farmName} onChange={e => setUserData({...userData, farmName: e.target.value})} /></div>
+            </div>
+            <button onClick={onNext} className="w-full mt-10 bg-[#4A5D23] text-white py-4 rounded-2xl font-black text-xl hover:opacity-90 shadow-xl transition-all">ถัดไป →</button>
           </div>
-          <div className="space-y-5 text-left">
-            <div><label className="text-xs font-bold text-gray-400 ml-2 uppercase">ชื่อผู้ใช้งาน</label><input type="text" className={theme.input} value={userData.name} onChange={e => setUserData({...userData, name: e.target.value})} /></div>
-            <div><label className="text-xs font-bold text-gray-400 ml-2 uppercase">ชื่อฟาร์ม</label><input type="text" className={theme.input} value={userData.farmName} onChange={e => setUserData({...userData, farmName: e.target.value})} /></div>
-          </div>
-          <button onClick={onNext} className={`w-full mt-10 bg-earth-green text-white py-4 rounded-[1.5rem] font-black text-xl hover:opacity-90 shadow-xl shadow-green-100 transition-all`}>เริ่มต้นใช้งาน →</button>
         </div>
-      </div>
-    );
+      );
+    };
 
-    const RobotSetup = ({ robots, setRobots, onNext }) => {
+    const RobotSetup = ({ robots, setRobots, onNext, onBack }) => {
       const [editingBot, setEditingBot] = useState(null);
       const [isManageMode, setIsManageMode] = useState(false);
+      const botFileRef = useRef(null);
 
       const handleAdd = () => {
         const newBot = { 
@@ -233,22 +238,26 @@
 
       if (editingBot) {
         return (
-          <div className="flex flex-col items-center justify-center min-h-screen p-4">
+          <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-earth-beige">
             <div className="bg-white p-10 rounded-[3rem] shadow-2xl border border-gray-100 w-full max-w-md modal-enter text-center">
-              <h2 className="text-2xl font-black text-earth-green mb-8 tracking-tight">ตั้งค่าหุ่นยนต์</h2>
-              <div className="w-28 h-28 rounded-[2rem] bg-gray-50 border-2 border-gray-100 flex items-center justify-center overflow-hidden mb-6 mx-auto shadow-inner">
-                <img src={editingBot.image} className="w-full h-full object-cover" />
+              <h2 className="text-xl font-bold mb-8">ตั้งค่าหุ่นยนต์</h2>
+              <div className="relative w-28 h-28 mx-auto mb-6 group">
+                <img src={editingBot.image} className="w-full h-full rounded-[2rem] object-cover shadow-inner border" />
+                <div onClick={() => botFileRef.current.click()} className="absolute inset-0 bg-black/40 rounded-[2rem] flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer text-white text-xs font-bold">อัปโหลดรูป</div>
+                <input type="file" ref={botFileRef} className="hidden" onChange={(e) => {
+                  const reader = new FileReader();
+                  reader.onload = (ev) => setEditingBot({...editingBot, image: ev.target.result});
+                  reader.readAsDataURL(e.target.files[0]);
+                }} />
               </div>
-              <div className="flex gap-2 justify-center mb-8">
-                <button onClick={() => setEditingBot({...editingBot, image: `https://api.dicebear.com/7.x/bottts/svg?seed=${Math.random()}`})} className="text-xs bg-blue-50 text-blue-600 px-4 py-2 rounded-xl font-bold shadow-sm">🎲 สุ่มรูป</button>
-              </div>
+              <button onClick={() => setEditingBot({...editingBot, image: `https://api.dicebear.com/7.x/bottts/svg?seed=${Math.random()}`})} className="text-xs text-blue-500 font-bold mb-8 block">🎲 สุ่มรูปหุ่นยนต์</button>
               <div className="space-y-4 text-left">
                 <input type="text" placeholder="ชื่อหุ่นยนต์" className={theme.input} value={editingBot.name} onChange={e => setEditingBot({...editingBot, name: e.target.value})} />
                 <input type="text" placeholder="IP Address" className={theme.input} value={editingBot.ip} onChange={e => setEditingBot({...editingBot, ip: e.target.value})} />
               </div>
               <div className="flex gap-3 mt-10">
-                <button onClick={() => setEditingBot(null)} className="flex-1 bg-gray-50 py-4 rounded-2xl font-black text-gray-400">ยกเลิก</button>
-                <button onClick={handleSave} className="flex-1 bg-earth-green text-white py-4 rounded-2xl font-black shadow-lg">บันทึก</button>
+                <button onClick={() => setEditingBot(null)} className="flex-1 bg-gray-50 py-4 rounded-2xl font-bold text-gray-400">ยกเลิก</button>
+                <button onClick={handleSave} className="flex-1 bg-[#4A5D23] text-white py-4 rounded-2xl font-bold shadow-lg">บันทึก</button>
               </div>
             </div>
           </div>
@@ -256,329 +265,301 @@
       }
 
       return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-6">
-          <h1 className="text-4xl font-black text-earth-green mb-2 text-center tracking-tight">Farm OS</h1>
-          <p className="text-gray-400 font-bold mb-10 tracking-[0.1em] uppercase text-sm">Select Robot to manage</p>
+        <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-earth-beige">
+          <h1 className="text-3xl font-black text-[#4A5D23] mb-1 text-center">หุ่นยนต์ของคุณ</h1>
+          <button onClick={() => setIsManageMode(!isManageMode)} className="mb-10 text-blue-600 font-bold bg-blue-50 px-6 py-1.5 rounded-full transition-all text-sm">
+            {isManageMode ? 'เสร็จสิ้น' : '⚙️ จัดการหุ่นยนต์'}
+          </button>
           
-          <div className="flex flex-wrap justify-center gap-8">
+          <div className="flex flex-wrap justify-center gap-6">
             {robots.map((robot) => (
               <div key={robot.id} className="flex flex-col items-center relative">
                 {isManageMode && (
-                  <button onClick={() => setRobots(robots.filter(r => r.id !== robot.id))} className="absolute -top-2 -right-2 bg-red-500 text-white w-8 h-8 rounded-full z-10 shadow-lg border-2 border-white font-bold flex items-center justify-center hover:scale-110">✕</button>
+                  <button onClick={() => setRobots(robots.filter(r => r.id !== robot.id))} className="absolute -top-2 -right-2 bg-red-500 text-white w-7 h-7 rounded-full z-10 shadow-lg border-2 border-white font-bold flex items-center justify-center hover:scale-110">✕</button>
                 )}
-                <div onClick={() => isManageMode ? setEditingBot(robot) : null} className={`w-36 h-36 rounded-[3rem] bg-white border-4 border-white shadow-xl ${isManageMode ? 'hover:border-earth-accent cursor-pointer scale-105' : ''} transition-all flex items-center justify-center overflow-hidden`}>
+                <div onClick={() => isManageMode ? setEditingBot(robot) : null} className={`w-32 h-32 rounded-[2.5rem] bg-white border-2 border-white shadow-xl ${isManageMode ? 'hover:border-blue-400 cursor-pointer scale-105' : ''} transition-all flex items-center justify-center overflow-hidden`}>
                   <img src={robot.image} className="w-full h-full object-cover" />
                 </div>
-                <span className="text-[#3E3A34] mt-5 font-black text-lg">{robot.name}</span>
+                <span className="text-[#3E3A34] mt-4 font-bold">{robot.name}</span>
               </div>
             ))}
             <div onClick={handleAdd} className="flex flex-col items-center cursor-pointer group">
-              <div className="w-36 h-36 rounded-[3rem] bg-white/50 border-4 border-dashed border-[#D9D1BE] group-hover:border-earth-green flex items-center justify-center text-5xl text-gray-300 group-hover:text-earth-green transition-all">➕</div>
-              <span className="text-gray-400 mt-5 font-bold uppercase tracking-wider text-xs">Add Bot</span>
+              <div className="w-32 h-32 rounded-[2.5rem] bg-white/40 border-4 border-dashed border-[#D9D1BE] group-hover:border-[#4A5D23] flex items-center justify-center text-4xl text-gray-300 transition-all">➕</div>
+              <span className="text-gray-400 mt-4 font-bold text-xs uppercase tracking-widest">Add Bot</span>
             </div>
           </div>
-          
-          <div className="mt-16 flex gap-4">
-            <button onClick={() => setIsManageMode(!isManageMode)} className="px-6 py-3 bg-white border-2 border-gray-200 text-gray-500 font-black rounded-2xl hover:bg-gray-50 transition-all text-sm">
-                {isManageMode ? 'เสร็จสิ้น' : '⚙️ จัดการ'}
-            </button>
-            <button onClick={onNext} className="px-12 py-4 bg-earth-green text-white font-black rounded-[1.5rem] text-xl shadow-2xl shadow-green-100 hover:scale-105 transition-all">แดชบอร์ด →</button>
-          </div>
+          <button onClick={onNext} className="mt-16 px-12 py-4 bg-[#4A5D23] text-white font-black rounded-full text-xl shadow-2xl hover:scale-105 transition-all">ไปที่แดชบอร์ด →</button>
         </div>
       );
     };
 
-    const FarmOS = ({ userData, setUserData, robots, setRobots, plantZones, setPlantZones, soilStats, setSoilStats, alerts, onLogout }) => {
+    const FarmOS = ({ userData, setUserData, robots, setRobots, plantZones, setPlantZones, soilStats, setSoilStats, alerts, setCurrentScreen, onLogout }) => {
       const [activeTab, setActiveTab] = useState('dashboard');
       const [alertFilter, setAlertFilter] = useState('all');
-      const [showZoneManager, setShowZoneManager] = useState(false);
+      const [showProfileEditor, setShowProfileEditor] = useState(false);
+      const [showMobileMenu, setShowMobileMenu] = useState(false);
+      const profileFileRef = useRef(null);
 
       const menuItems = [
-        { id: 'dashboard', label: 'Overview', icon: '📊' },
-        { id: 'plant', label: 'Health', icon: '🌿' },
-        { id: 'soil', label: 'Soil', icon: '🧪' },
-        { id: 'resource', label: 'Control', icon: '💧' },
-        { id: 'robot', label: 'Robots', icon: '🤖' },
-        { id: 'reports', label: 'Stats', icon: '📈' },
-        { id: 'alerts', label: 'Alerts', icon: '🔔' },
+        { id: 'dashboard', label: 'ภาพรวม', icon: '📊' },
+        { id: 'plant', label: 'สุขภาพพืช', icon: '🌿' },
+        { id: 'soil', label: 'วิเคราะห์ดิน', icon: '🧪' },
+        { id: 'resource', label: 'ควบคุมระบบ', icon: '💧' },
+        { id: 'robot', label: 'หุ่นยนต์', icon: '🤖' },
+        { id: 'reports', label: 'สถิติฟาร์ม', icon: '📈' },
+        { id: 'alerts', label: 'แจ้งเตือน', icon: '🔔' },
       ];
 
       const filteredAlerts = alertFilter === 'all' ? alerts : alerts.filter(a => a.type === alertFilter);
 
+      const MobileMenuModal = () => (
+        <div className="fixed inset-0 bg-black/60 z-[200] backdrop-blur-sm modal-enter flex items-end">
+           <div className="w-full bg-white rounded-t-[3rem] p-8 pb-12 shadow-2xl">
+              <div className="flex justify-between items-center mb-8">
+                 <h3 className="text-2xl font-black text-[#4A5D23]">เมนูจัดการ</h3>
+                 <button onClick={() => setShowMobileMenu(false)} className="text-gray-400 text-3xl">✕</button>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                 {menuItems.slice(4).map(item => (
+                   <button key={item.id} onClick={() => { setActiveTab(item.id); setShowMobileMenu(false); }} className="p-6 bg-gray-50 rounded-3xl flex flex-col items-center gap-3 border hover:border-green-300">
+                      <span className="text-4xl">{item.icon}</span>
+                      <span className="font-bold text-gray-700">{item.label}</span>
+                   </button>
+                 ))}
+                 <button onClick={() => { setShowProfileEditor(true); setShowMobileMenu(false); }} className="p-6 bg-blue-50 rounded-3xl flex flex-col items-center gap-3 border border-blue-100 col-span-2">
+                    <span className="text-3xl">👤</span>
+                    <span className="font-bold text-blue-700">แก้ไขโปรไฟล์ส่วนตัว</span>
+                 </button>
+              </div>
+              <button onClick={onLogout} className="w-full mt-6 py-4 bg-red-50 text-red-500 rounded-2xl font-black">ออกจากระบบ</button>
+           </div>
+        </div>
+      );
+
       return (
         <div className="flex flex-col md:flex-row h-screen relative overflow-hidden bg-earth-beige">
           
-          {/* Sidebar */}
-          <aside className={`hidden md:flex flex-col w-64 bg-earth-sidebar h-full border-r border-[#D9D1BE] p-6 shadow-sm`}>
+          {showMobileMenu && <MobileMenuModal />}
+
+          {/* Profile Editor Modal */}
+          {showProfileEditor && (
+            <div className="fixed inset-0 bg-black/50 z-[210] flex items-center justify-center p-4 backdrop-blur-sm">
+               <div className="bg-white p-8 rounded-[2.5rem] w-full max-w-sm modal-enter text-center">
+                  <h3 className="text-xl font-black mb-8">แก้ไขโปรไฟล์</h3>
+                  <div className="relative w-24 h-24 mx-auto mb-6 group">
+                    <img src={userData.avatar} className="w-full h-full rounded-full border-4 border-[#4A5D23] object-cover shadow-xl" />
+                    <div onClick={() => profileFileRef.current.click()} className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer text-white text-[10px] font-bold">เปลี่ยนรูป</div>
+                    <input type="file" ref={profileFileRef} className="hidden" accept="image/*" onChange={(e) => {
+                        const reader = new FileReader();
+                        reader.onload = (ev) => setUserData({...userData, avatar: ev.target.result});
+                        reader.readAsDataURL(e.target.files[0]);
+                    }} />
+                  </div>
+                  <div className="space-y-4 text-left">
+                    <input type="text" className={theme.input} value={userData.name} onChange={e=>setUserData({...userData, name: e.target.value})} placeholder="ชื่อของคุณ" />
+                    <input type="text" className={theme.input} value={userData.farmName} onChange={e=>setUserData({...userData, farmName: e.target.value})} placeholder="ชื่อฟาร์ม" />
+                  </div>
+                  <button onClick={() => setShowProfileEditor(false)} className="w-full bg-[#4A5D23] text-white py-3 rounded-2xl font-bold mt-8 shadow-lg">บันทึกข้อมูล</button>
+                  <button onClick={() => setShowProfileEditor(false)} className="mt-4 text-gray-400 font-bold">ยกเลิก</button>
+               </div>
+            </div>
+          )}
+
+          {/* Sidebar (Desktop Only) */}
+          <aside className="hidden md:flex flex-col w-64 bg-earth-sidebar h-full border-r border-[#D9D1BE] p-6">
             <div className="flex items-center gap-3 mb-10">
               <img src={APP_LOGO} className="w-10 h-10 object-contain" />
-              <h1 className="text-2xl font-black text-earth-green tracking-tighter truncate">{userData.farmName || 'Farm OS'}</h1>
+              <h1 className="text-2xl font-black text-[#4A5D23] tracking-tighter truncate">{userData.farmName || 'Farm OS'}</h1>
             </div>
             <div className="flex-1 space-y-2 overflow-y-auto hide-scrollbar">
               {menuItems.map(item => (
-                <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl font-black text-left transition-all ${activeTab === item.id ? 'bg-earth-green text-white shadow-xl shadow-green-100 transform scale-105' : 'text-[#5C564B] hover:bg-white/40'}`}>
+                <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl font-black text-left transition-all ${activeTab === item.id ? 'bg-[#4A5D23] text-white shadow-xl scale-105' : 'text-[#5C564B] hover:bg-white/40'}`}>
                   <span className="text-xl">{item.icon}</span> {item.label}
                 </button>
               ))}
             </div>
             <div className="mt-4 pt-6 border-t border-[#D9D1BE]">
-                <div className="flex items-center gap-4 p-4 bg-white/40 rounded-[1.5rem] mb-6 shadow-inner">
-                  <div className="w-12 h-12 rounded-full border-2 border-white overflow-hidden shadow-md">
-                    <img src={userData.avatar} className="w-full h-full object-cover" />
-                  </div>
+                <div onClick={() => setShowProfileEditor(true)} className="flex items-center gap-3 p-3 bg-white/40 rounded-2xl mb-4 cursor-pointer group">
+                  <img src={userData.avatar} className="w-10 h-10 rounded-full border-2 border-white object-cover group-hover:scale-110 transition-all shadow-md" />
                   <div className="overflow-hidden">
                     <p className="text-sm font-black truncate">{userData.name}</p>
-                    <p className="text-[10px] text-earth-brown font-black uppercase tracking-widest">{userData.role}</p>
+                    <p className="text-[10px] text-[#8B5A2B] font-black uppercase">Edit Profile</p>
                   </div>
                 </div>
-                <button onClick={onLogout} className="w-full bg-red-100 p-4 rounded-2xl text-center font-black text-red-600 hover:bg-red-200 transition-colors">Log Out</button>
+                <button onClick={onLogout} className="w-full bg-red-50 p-3 rounded-xl text-center font-bold text-red-500 hover:bg-red-100">Log Out</button>
             </div>
           </aside>
 
-          {/* Main Content Area */}
-          <main className="flex-1 h-full overflow-y-auto p-4 md:p-8 pb-28 md:pb-8">
-            
-            {/* Header Mobile */}
+          {/* Main Area */}
+          <main className="flex-1 h-full overflow-y-auto p-4 md:p-8 pb-28">
+            {/* Mobile Header */}
             <div className="md:hidden flex justify-between items-center mb-6">
-                <img src={APP_LOGO} className="w-10 h-10" />
-                <h1 className="text-xl font-black text-earth-green">{userData.farmName}</h1>
-                <div className="w-10 h-10 rounded-full border-2 border-earth-green overflow-hidden shadow-sm"><img src={userData.avatar} className="w-full h-full object-cover" /></div>
+                <img src={APP_LOGO} className="w-12 h-12 object-contain" />
+                <h1 className="text-2xl font-black text-[#4A5D23]">{userData.farmName}</h1>
+                <div onClick={() => setShowProfileEditor(true)} className="w-10 h-10 rounded-full border-2 border-[#4A5D23] overflow-hidden shadow-md"><img src={userData.avatar} className="w-full h-full object-cover" /></div>
             </div>
 
-            {/* Tab: Dashboard */}
+            {/* TAB: DASHBOARD */}
             {activeTab === 'dashboard' && (
               <div className="space-y-6 animate-in fade-in duration-500">
-                <div className="flex justify-between items-center"><h2 className="text-2xl font-black text-[#3E3A34] tracking-tight">แดชบอร์ดหลัก</h2><p className="text-[10px] bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-bold">ข้อมูลจำลอง (Mock)</p></div>
-                
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="p-6 rounded-[2rem] bg-white border shadow-sm"><p className="text-xs font-bold text-gray-400 uppercase mb-2">Moisture</p><h3 className="text-3xl font-black text-blue-500">45%</h3></div>
-                  <div className="p-6 rounded-[2rem] bg-white border shadow-sm"><p className="text-xs font-bold text-gray-400 uppercase mb-2">Temp</p><h3 className="text-3xl font-black text-orange-500">32°C</h3></div>
-                  <div className="p-6 rounded-[2rem] bg-white border shadow-sm"><p className="text-xs font-bold text-gray-400 uppercase mb-2">Active Bot</p><h3 className="text-3xl font-black text-earth-green">{robots.length}</h3></div>
-                  <div className="p-6 rounded-[2rem] bg-white border shadow-sm"><p className="text-xs font-bold text-gray-400 uppercase mb-2">Alerts</p><h3 className="text-3xl font-black text-red-500">{alerts.filter(a => a.type === 'critical').length}</h3></div>
+                <h2 className="text-2xl font-black">Dashboard</h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                  <div className="p-5 bg-white rounded-[2rem] shadow-sm"><p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Soil Hum</p><h3 className="text-2xl font-black text-blue-500">{soilStats.moisture}%</h3></div>
+                  <div className="p-5 bg-white rounded-[2rem] shadow-sm"><p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Air Temp</p><h3 className="text-2xl font-black text-orange-500">32°C</h3></div>
+                  <div className="p-5 bg-white rounded-[2rem] shadow-sm"><p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Bots</p><h3 className="text-2xl font-black text-[#4A5D23]">{robots.length}</h3></div>
+                  <div className="p-5 bg-white rounded-[2rem] shadow-sm"><p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Alerts</p><h3 className="text-2xl font-black text-red-500">{alerts.length}</h3></div>
                 </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <div className="lg:col-span-2 w-full h-[400px] bg-[#D4E0C2] rounded-[3rem] relative border-4 border-white flex items-center justify-center overflow-hidden shadow-xl">
-                      <div className="absolute inset-0 opacity-20 pointer-events-none" style={{backgroundImage: 'radial-gradient(#4A5D23 1px, transparent 1px)', backgroundSize: '30px 30px'}}></div>
-                      <span className="text-earth-green font-black opacity-30 text-3xl tracking-tighter uppercase">Satellite View</span>
-                      {robots.map((r, i) => (
-                        <div key={r.id} className="absolute bg-white p-1 rounded-full shadow-2xl border-4 border-orange-400 animate-bounce w-14 h-14 flex items-center justify-center overflow-hidden z-10" style={{top: 20+(i*20)+'%', left: 40+(i*15)+'%'}}>
-                          <img src={r.image} className="w-full h-full object-cover rounded-full" />
-                        </div>
-                      ))}
-                      {plantZones.map((z, i) => (
-                        <div key={z.id} className="absolute bg-white/90 px-4 py-2 rounded-2xl shadow-xl text-xs font-black text-[#4A5D23] border border-green-200" style={{top: (i*30)+15+'%', left: (i*20)+10+'%'}}>ZONE {z.id}: {z.name}</div>
-                      ))}
-                  </div>
-                  <div className="p-8 rounded-[3rem] bg-white border shadow-sm flex flex-col justify-center">
-                    <h3 className="font-black text-gray-700 mb-8 flex justify-between items-center uppercase tracking-wider">Zone Humidity <span>(%)</span></h3>
-                    <div className="flex items-end justify-between h-48 px-4 border-b border-gray-50 pb-2">
-                      {plantZones.map(z => (
-                        <div key={z.id} className="flex flex-col items-center gap-3 flex-1">
-                          <div className="w-12 bg-blue-400 rounded-t-[1rem] bar-transition shadow-inner" style={{height: `${z.moisture}%`}}></div>
-                          <span className="text-xs font-black text-gray-400">{z.id}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                <div className="w-full h-[350px] bg-[#D4E0C2] rounded-[3rem] relative border-4 border-white shadow-xl flex items-center justify-center overflow-hidden">
+                    <span className="text-earth-green font-black opacity-30 text-2xl tracking-tighter uppercase">Sat-Map Real-time</span>
+                    {robots.map((r, i) => (
+                      <div key={r.id} className="absolute bg-white p-1 rounded-full shadow-2xl border-4 border-orange-400 animate-bounce w-14 h-14 z-10" style={{top: 20+(i*20)+'%', left: 40+(i*15)+'%'}}>
+                        <img src={r.image} className="w-full h-full object-cover rounded-full" />
+                      </div>
+                    ))}
                 </div>
               </div>
             )}
 
-            {/* Tab: Plant Health */}
-            {activeTab === 'plant' && (
-              <div className="space-y-6 animate-in fade-in duration-500">
-                <div className="flex justify-between items-center"><h2 className="text-2xl font-black">Plant Health Intelligence</h2><p className="text-[10px] bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-bold">ข้อมูลจำลอง (Mock)</p></div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                   <div className="p-8 rounded-[3rem] bg-white border shadow-sm">
-                      <h3 className="font-black text-earth-green mb-6 uppercase tracking-widest text-sm">Overall Health Score</h3>
-                      <div className="relative w-48 h-48 mx-auto flex items-center justify-center">
-                        <svg className="w-full h-full transform -rotate-90">
-                           <circle cx="96" cy="96" r="80" stroke="#f3f4f6" strokeWidth="16" fill="transparent" />
-                           <circle cx="96" cy="96" r="80" stroke="#4A5D23" strokeWidth="16" fill="transparent" strokeDasharray={502} strokeDashoffset={502 - (502 * 92 / 100)} className="bar-transition" />
-                        </svg>
-                        <span className="absolute text-5xl font-black text-earth-green">92%</span>
-                      </div>
-                      <p className="text-center mt-6 text-gray-400 font-bold uppercase tracking-widest text-xs">Condition: Excellent</p>
-                   </div>
-                   <div className="p-8 rounded-[3rem] bg-white border shadow-sm">
-                      <h3 className="font-black text-red-700 mb-6 uppercase tracking-widest text-sm">Detected Issues</h3>
-                      <div className="space-y-4">
-                         {alerts.filter(a => a.type === 'critical').map(a => (
-                           <div key={a.id} className="p-5 bg-red-50 rounded-3xl border border-red-100 flex gap-4">
-                              <span className="text-3xl">🍄</span>
-                              <div><h4 className="font-black text-red-700">{a.title}</h4><p className="text-xs text-red-500 font-bold uppercase tracking-wider">{a.zone} • {a.time}</p></div>
-                           </div>
-                         ))}
-                         <div className="p-5 bg-green-50 rounded-3xl border border-green-100 flex gap-4 opacity-50">
-                            <span className="text-3xl">🐛</span>
-                            <div><h4 className="font-black text-green-700">ไม่พบแมลงศัตรูพืชเพิ่มเติม</h4><p className="text-xs text-green-500 font-bold uppercase tracking-wider">Zone A, C, D • OK</p></div>
-                         </div>
-                      </div>
-                   </div>
-                </div>
-              </div>
-            )}
-
-            {/* Tab: Soil Analysis with Tester */}
+            {/* TAB: SOIL (Tester) */}
             {activeTab === 'soil' && (
               <div className="space-y-6 animate-in fade-in duration-500">
-                <div className="flex justify-between items-center"><h2 className="text-2xl font-black text-earth-green">วิเคราะห์ดิน (Soil Tester)</h2><p className="text-[10px] bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-bold">Mock Tester Mode</p></div>
+                <h2 className="text-2xl font-black text-earth-green tracking-tight">วิเคราะห์คุณภาพดิน</h2>
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  
-                  {/* Mock Tester Inputs */}
-                  <div className="p-8 rounded-[3rem] bg-white border border-[#D9D1BE] shadow-xl">
-                    <h3 className="font-black text-[#8B5A2B] mb-8 border-b border-gray-50 pb-4 tracking-widest uppercase text-sm">🕹️ Simulator</h3>
+                  <div className="p-8 bg-white rounded-[3rem] border border-[#D9D1BE] shadow-xl">
+                    <h3 className="font-black text-[#8B5A2B] mb-8 border-b pb-4 uppercase text-xs tracking-widest">🕹️ Soil Simulator</h3>
                     <div className="space-y-8">
-                       <div><label className="text-xs font-black text-green-700 block mb-3 uppercase tracking-wider">Nitrogen (N): {soilStats.N}%</label><input type="range" className="w-full accent-green-600" min="0" max="100" value={soilStats.N} onChange={e=>setSoilStats({...soilStats, N: e.target.value})} /></div>
-                       <div><label className="text-xs font-black text-orange-700 block mb-3 uppercase tracking-wider">Phosphorus (P): {soilStats.P}%</label><input type="range" className="w-full accent-orange-600" min="0" max="100" value={soilStats.P} onChange={e=>setSoilStats({...soilStats, P: e.target.value})} /></div>
-                       <div><label className="text-xs font-black text-yellow-700 block mb-3 uppercase tracking-wider">Potassium (K): {soilStats.K}%</label><input type="range" className="w-full accent-yellow-600" min="0" max="100" value={soilStats.K} onChange={e=>setSoilStats({...soilStats, K: e.target.value})} /></div>
-                       <div className="pt-6 border-t border-gray-50"><label className="text-xs font-black text-blue-700 block mb-3 uppercase tracking-wider">Soil Moisture: {soilStats.moisture}%</label><input type="range" className="w-full accent-blue-600" min="0" max="100" value={soilStats.moisture} onChange={e=>setSoilStats({...soilStats, moisture: e.target.value})} /></div>
+                       <div><label className="text-xs font-black text-green-700 block mb-3 uppercase">N (Nitrogen): {soilStats.N}%</label><input type="range" className="w-full accent-[#4A5D23]" min="0" max="100" value={soilStats.N} onChange={e=>setSoilStats({...soilStats, N: e.target.value})} /></div>
+                       <div><label className="text-xs font-black text-orange-700 block mb-3 uppercase">P (Phosphorus): {soilStats.P}%</label><input type="range" className="w-full accent-orange-500" min="0" max="100" value={soilStats.P} onChange={e=>setSoilStats({...soilStats, P: e.target.value})} /></div>
+                       <div><label className="text-xs font-black text-yellow-700 block mb-3 uppercase">K (Potassium): {soilStats.K}%</label><input type="range" className="w-full accent-yellow-500" min="0" max="100" value={soilStats.K} onChange={e=>setSoilStats({...soilStats, K: e.target.value})} /></div>
+                       <div className="pt-6 border-t"><label className="text-xs font-black text-blue-700 block mb-3 uppercase tracking-widest">Soil Moisture: {soilStats.moisture}%</label><input type="range" className="w-full accent-blue-600" min="0" max="100" value={soilStats.moisture} onChange={e=>setSoilStats({...soilStats, moisture: e.target.value})} /></div>
                     </div>
                   </div>
-
-                  {/* Dynamic Chart */}
-                  <div className="lg:col-span-2 p-10 rounded-[3rem] bg-white border shadow-sm flex flex-col">
-                    <h3 className="font-black text-gray-700 mb-12 uppercase tracking-widest text-sm">Visualized Nutrient Levels</h3>
-                    <div className="flex justify-around items-end h-64 border-b border-gray-100 px-10 mb-8">
-                        <div className="flex flex-col items-center gap-4 w-20 group">
-                           <div className="w-full bg-green-500 rounded-t-[1.5rem] bar-transition shadow-lg shadow-green-100 group-hover:brightness-110" style={{height: `${soilStats.N}%`}}></div>
-                           <span className="font-black text-2xl text-green-700">N</span>
+                  <div className="lg:col-span-2 p-10 bg-white rounded-[3rem] shadow-sm flex flex-col items-center">
+                    <h3 className="font-black text-gray-500 mb-12 uppercase text-xs tracking-widest">Visualized Nutrient Levels</h3>
+                    <div className="flex justify-around items-end h-64 border-b border-gray-100 w-full px-4 md:px-20 gap-4">
+                        <div className="flex flex-col items-center gap-4 w-full max-w-[80px]">
+                           <div className="w-full bg-[#4A5D23] rounded-t-[1.5rem] bar-transition shadow-lg shadow-green-100" style={{height: soilStats.N+'%'}}></div>
+                           <span className="font-black text-2xl text-[#4A5D23]">N</span>
                         </div>
-                        <div className="flex flex-col items-center gap-4 w-20 group">
-                           <div className="w-full bg-orange-500 rounded-t-[1.5rem] bar-transition shadow-lg shadow-orange-100 group-hover:brightness-110" style={{height: `${soilStats.P}%`}}></div>
-                           <span className="font-black text-2xl text-orange-700">P</span>
+                        <div className="flex flex-col items-center gap-4 w-full max-w-[80px]">
+                           <div className="w-full bg-orange-500 rounded-t-[1.5rem] bar-transition shadow-lg shadow-orange-100" style={{height: soilStats.P+'%'}}></div>
+                           <span className="font-black text-2xl text-orange-500">P</span>
                         </div>
-                        <div className="flex flex-col items-center gap-4 w-20 group">
-                           <div className="w-full bg-yellow-500 rounded-t-[1.5rem] bar-transition shadow-lg shadow-yellow-100 group-hover:brightness-110" style={{height: `${soilStats.K}%`}}></div>
-                           <span className="font-black text-2xl text-yellow-700">K</span>
+                        <div className="flex flex-col items-center gap-4 w-full max-w-[80px]">
+                           <div className="w-full bg-yellow-500 rounded-t-[1.5rem] bar-transition shadow-lg shadow-yellow-100" style={{height: soilStats.K+'%'}}></div>
+                           <span className="font-black text-2xl text-yellow-500">K</span>
                         </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-6">
-                       <div className="text-center p-4 rounded-3xl bg-gray-50 border border-white shadow-inner"><p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">pH Level</p><p className="text-2xl font-black text-earth-green">6.8</p></div>
-                       <div className="text-center p-4 rounded-3xl bg-gray-50 border border-white shadow-inner"><p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Temperature</p><p className="text-2xl font-black text-earth-green">26°C</p></div>
-                       <div className="text-center p-4 rounded-3xl bg-gray-50 border border-white shadow-inner"><p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">EC</p><p className="text-2xl font-black text-earth-green">1.2</p></div>
                     </div>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Tab: Control (Resource) */}
+            {/* TAB: PLANT HEALTH */}
+            {activeTab === 'plant' && (
+              <div className="space-y-6 animate-in fade-in duration-500">
+                <h2 className="text-2xl font-black">Plant Health Center</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="p-8 bg-white rounded-[3rem] shadow-sm text-center">
+                    <h3 className="font-black text-gray-400 mb-8 uppercase text-[10px] tracking-widest">Health Score (Mock)</h3>
+                    <div className="w-40 h-40 rounded-full border-[12px] border-[#4A5D23] mx-auto flex items-center justify-center shadow-xl shadow-green-50"><span className="text-4xl font-black text-[#4A5D23]">92%</span></div>
+                    <p className="mt-8 text-gray-400 font-bold text-sm uppercase">Condition: Optimal</p>
+                  </div>
+                  <div className="p-8 bg-white rounded-[3rem] shadow-sm">
+                    <h3 className="font-black text-red-700 mb-6 uppercase text-[10px] tracking-widest">Detected Disease</h3>
+                    <div className="p-5 bg-red-50 rounded-[2rem] flex gap-4 border border-red-100">
+                      <span className="text-3xl">🍄</span>
+                      <div><h4 className="font-black text-red-700 leading-none mb-1">พบราน้ำค้าง</h4><p className="text-[10px] text-red-500 font-bold uppercase tracking-widest">Zone B • Critical</p></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB: RESOURCE (Irrigation) */}
             {activeTab === 'resource' && (
               <div className="space-y-6 animate-in fade-in duration-500">
-                <h2 className="text-2xl font-black">ควบคุมการจ่ายน้ำและปุ๋ย</h2>
+                <h2 className="text-2xl font-black">ควบคุมการรดน้ำ</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {plantZones.map(z => (
-                    <div key={z.id} className="p-8 rounded-[3rem] bg-white border shadow-sm flex flex-col group hover:border-blue-200 transition-all">
-                       <div className="flex justify-between items-start mb-6">
-                          <div><h3 className="font-black text-2xl text-gray-800">Zone {z.id}</h3><p className="text-sm font-bold text-gray-400">{z.name}</p></div>
-                          <span className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl shadow-inner ${z.moisture < 40 ? 'bg-orange-100 text-orange-600 animate-pulse' : 'bg-blue-100 text-blue-600'}`}>{z.moisture}%</span>
+                    <div key={z.id} className="p-8 bg-white rounded-[3rem] shadow-sm border group hover:border-[#4A5D23] transition-all flex flex-col">
+                       <div className="flex justify-between items-start mb-8">
+                          <div><h3 className="font-black text-2xl text-gray-800 tracking-tight">Zone {z.id}</h3><p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{z.name}</p></div>
+                          <span className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl shadow-inner ${z.moisture < 40 ? 'bg-orange-100 text-orange-500 animate-pulse' : 'bg-blue-100 text-blue-600'}`}>{z.moisture}%</span>
                        </div>
-                       <div className="bg-blue-50 p-6 rounded-[2rem] mb-6 flex-1 shadow-inner">
-                          <p className="text-[10px] font-black text-blue-700 uppercase tracking-widest mb-2">Schedule Info</p>
-                          <p className="font-black text-blue-900">{z.schedule || 'No Schedule set'}</p>
-                       </div>
-                       <div className="flex gap-3">
-                          <button className="flex-1 bg-blue-500 text-white py-4 rounded-2xl font-black shadow-lg shadow-blue-100 hover:bg-blue-600">รดน้ำตอนนี้</button>
-                          <button className="flex-1 bg-gray-50 border border-gray-100 text-gray-400 py-4 rounded-2xl font-black">ตั้งเวลา</button>
-                       </div>
+                       <button className="w-full bg-blue-500 text-white py-4 rounded-2xl font-black shadow-lg shadow-blue-100 hover:bg-blue-600">Activate Water</button>
                     </div>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Tab: Robots */}
+            {/* TAB: ROBOT */}
             {activeTab === 'robot' && (
               <div className="space-y-6 animate-in fade-in duration-500">
-                 <div className="flex justify-between items-center"><h2 className="text-2xl font-black">หุ่นยนต์ปฏิบัติการ</h2><button onClick={()=>setCurrentScreen('robot_setup')} className="bg-earth-green text-white px-6 py-3 rounded-full font-black text-xs shadow-xl">+ จัดการหุ่นยนต์</button></div>
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {robots.map(r => (
-                      <div key={r.id} className="p-8 rounded-[3rem] bg-white border shadow-sm flex items-center gap-6 group hover:scale-[1.02] transition-transform">
-                        <div className="w-24 h-24 bg-gray-50 rounded-[2rem] overflow-hidden border-2 border-white shadow-lg group-hover:rotate-6 transition-all"><img src={r.image} className="w-full h-full object-cover" /></div>
+                <div className="flex justify-between items-center"><h2 className="text-2xl font-black">OPERATIVE BOTS</h2><button onClick={() => setCurrentScreen('robot_setup')} className="bg-[#4A5D23] text-white px-5 py-2.5 rounded-full font-black text-xs shadow-xl">+ จัดการ</button></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                   {robots.map(r => (
+                     <div key={r.id} className="p-8 bg-white rounded-[3rem] shadow-sm flex items-center gap-6 border border-white hover:border-green-100 transition-all">
+                        <img src={r.image} className="w-20 h-20 rounded-[1.5rem] object-cover border shadow-md" />
                         <div className="flex-1">
-                          <h4 className="font-black text-2xl text-gray-800">{r.name}</h4>
-                          <p className="text-xs text-blue-600 font-black uppercase tracking-widest mb-3">{r.status}</p>
-                          <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden shadow-inner"><div className="h-full bg-green-500" style={{width: r.battery+'%'}}></div></div>
-                          <p className="text-[10px] font-black text-gray-400 mt-2">BATTERY: {r.battery}%</p>
+                           <h4 className="font-black text-xl text-gray-800 leading-tight">{r.name}</h4>
+                           <p className="text-[10px] text-blue-600 font-bold uppercase tracking-[0.2em] mb-3">{r.status}</p>
+                           <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden mb-1"><div className="h-full bg-green-500" style={{width: r.battery+'%'}}></div></div>
+                           <p className="text-[8px] font-black text-gray-300">BATTERY {r.battery}%</p>
                         </div>
-                      </div>
-                    ))}
+                     </div>
+                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* TAB: STATS (Reports) */}
+            {activeTab === 'reports' && (
+              <div className="space-y-6 animate-in fade-in duration-500 text-center">
+                 <h2 className="text-2xl font-black text-left">Farm Intelligence Statistics</h2>
+                 <div className="p-10 bg-white rounded-[3.5rem] shadow-sm border border-white">
+                    <h3 className="font-black text-gray-400 mb-10 uppercase text-[10px] tracking-[0.3em]">Yield Improvement Rate</h3>
+                    <div className="flex justify-center items-end gap-10 h-40 border-b border-gray-50 pb-2">
+                       <div className="flex flex-col items-center gap-3"><div className="w-16 bg-gray-100 rounded-t-2xl" style={{height:'35%'}}></div><span className="text-[8px] font-black opacity-40">LAST SEASON</span></div>
+                       <div className="flex flex-col items-center gap-3"><div className="w-16 bg-[#4A5D23] rounded-t-2xl shadow-xl shadow-green-100 animate-pulse" style={{height:'88%'}}></div><span className="text-[8px] font-black text-earth-green">FARM OS MODE (+45%)</span></div>
+                    </div>
+                    <p className="mt-10 text-[11px] font-bold text-gray-400">สรุป: ผลผลิตในรอบปัจจุบันเพิ่มขึ้น 45% จากการควบคุมน้ำและแร่ธาตุด้วย AI</p>
                  </div>
               </div>
             )}
 
-            {/* Tab: Reports / Stats */}
-            {activeTab === 'reports' && (
-               <div className="space-y-6 animate-in fade-in duration-500">
-                  <div className="flex justify-between items-center"><h2 className="text-2xl font-black">สถิติและความถี่</h2><p className="text-[10px] bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-bold">ข้อมูลจำลอง (Mock)</p></div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                     <div className="p-8 rounded-[3rem] bg-white border shadow-sm">
-                        <h3 className="font-black text-gray-700 mb-8 uppercase tracking-widest text-sm">ความถี่โรคพืชที่พบ</h3>
-                        <div className="space-y-6">
-                           {[
-                             {n:'ราน้ำค้าง', v:85, c:'bg-red-400'},
-                             {n:'เพลี้ยแป้ง', v:45, c:'bg-orange-400'},
-                             {n:'ใบหงิก', v:20, c:'bg-yellow-400'}
-                           ].map(item => (
-                             <div key={item.n}>
-                                <div className="flex justify-between mb-2"><span className="font-black text-sm">{item.n}</span><span className="font-black text-xs text-gray-400">{item.v}%</span></div>
-                                <div className="w-full h-4 bg-gray-50 rounded-full overflow-hidden shadow-inner"><div className={`h-full ${item.c} bar-transition`} style={{width: item.v+'%'}}></div></div>
-                             </div>
-                           ))}
-                        </div>
-                     </div>
-                     <div className="p-8 rounded-[3rem] bg-white border shadow-sm text-center flex flex-col justify-center">
-                        <h3 className="font-black text-gray-700 mb-8 uppercase tracking-widest text-sm">เปรียบเทียบผลผลิต</h3>
-                        <div className="flex justify-center items-center gap-8">
-                           <div className="flex flex-col items-center">
-                              <div className="w-16 bg-gray-100 rounded-t-2xl mb-2" style={{height: '80px'}}></div>
-                              <span className="text-[10px] font-black text-gray-400">ปีที่แล้ว</span>
-                           </div>
-                           <div className="flex flex-col items-center">
-                              <div className="w-16 bg-earth-green rounded-t-2xl shadow-xl shadow-green-100 mb-2 animate-pulse" style={{height: '140px'}}></div>
-                              <span className="text-[10px] font-black text-earth-green">ปีนี้ (+45%)</span>
-                           </div>
-                        </div>
-                        <p className="mt-8 text-xs text-gray-400 font-bold">สรุปผลผลิตดีขึ้นเนื่องจากระบบ Farm OS เข้ามาช่วยจัดการ</p>
-                     </div>
-                  </div>
-               </div>
-            )}
-
-            {/* Tab: Alerts */}
+            {/* TAB: ALERTS (Notification Center) */}
             {activeTab === 'alerts' && (
               <div className="space-y-6 animate-in fade-in duration-500">
-                <h2 className="text-2xl font-black">Notification Center</h2>
-                <div className="flex gap-2 mb-4 overflow-x-auto hide-scrollbar pb-2">
+                 <h2 className="text-2xl font-black">Alert Hub</h2>
+                 <div className="flex gap-2 overflow-x-auto pb-4 hide-scrollbar">
                    {['all', 'critical', 'warning', 'info'].map(f => (
-                     <button key={f} onClick={()=>setAlertFilter(f)} className={`px-6 py-2 rounded-full text-xs font-black border-2 transition-all ${alertFilter === f ? 'bg-earth-green border-earth-green text-white shadow-xl' : 'bg-white border-gray-100 text-gray-400'}`}>
-                       {f === 'all' ? 'All' : f === 'critical' ? 'Critical' : f === 'warning' ? 'Warning' : 'Info'}
+                     <button key={f} onClick={()=>setAlertFilter(f)} className={`px-5 py-2 rounded-full text-xs font-black transition-all border-2 ${alertFilter === f ? 'bg-black border-black text-white' : 'bg-white border-gray-100 text-gray-400'}`}>
+                       {f === 'all' ? 'All' : f === 'critical' ? '🔴 Critical' : f === 'warning' ? '🟡 Warning' : '🔵 Info'}
                      </button>
                    ))}
-                </div>
-                <div className="space-y-4">
-                  {filteredAlerts.map(a => (
-                    <div key={a.id} className={`p-6 rounded-[2rem] border-2 modal-enter ${a.type === 'critical' ? 'bg-red-50 border-red-100' : 'bg-white border-gray-50'}`}>
-                      <div className="flex justify-between items-center mb-2"><h4 className={`font-black text-lg ${a.type === 'critical' ? 'text-red-700' : 'text-gray-800'}`}>{a.title}</h4><span className="text-[10px] font-black opacity-30">{a.time}</span></div>
-                      <p className="text-sm opacity-60 font-bold mb-3">{a.detail}</p>
-                      <span className="text-[10px] bg-gray-100 px-3 py-1 rounded-full font-black uppercase tracking-widest text-gray-400">{a.zone}</span>
-                    </div>
-                  ))}
-                </div>
+                 </div>
+                 <div className="space-y-4">
+                    {filteredAlerts.length > 0 ? filteredAlerts.map(a => (
+                      <div key={a.id} className={`p-6 rounded-[2.5rem] border-2 shadow-sm ${a.type==='critical'?'bg-red-50 border-red-100 text-red-700':'bg-white border-gray-100'}`}>
+                         <div className="flex justify-between items-center mb-1"><h4 className="font-black text-lg">{a.title}</h4><span className="text-[10px] opacity-40">{a.time}</span></div>
+                         <p className="text-sm opacity-70 font-bold mb-3">{a.detail}</p>
+                         <span className="text-[9px] bg-gray-100 px-3 py-1 rounded-full font-black uppercase tracking-widest opacity-50">{a.zone}</span>
+                      </div>
+                    )) : <div className="text-center py-20 font-bold text-gray-300">ไม่มีการแจ้งเตือนในขณะนี้</div>}
+                 </div>
               </div>
             )}
           </main>
 
-          {/* Mobile Bottom Nav */}
-          <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex justify-around p-4 z-50 shadow-2xl rounded-t-[2.5rem]">
-            {menuItems.slice(0, 4).map(item => (
-               <button key={item.id} onClick={() => setActiveTab(item.id)} className={`text-2xl transition-all ${activeTab === item.id ? 'opacity-100 scale-125 text-earth-green' : 'opacity-20'}`}>
-                  {item.icon}
-               </button>
-            ))}
-            <button onClick={()=>setActiveTab('alerts')} className={`text-2xl transition-all ${activeTab === 'alerts' ? 'opacity-100 scale-125 text-earth-green' : 'opacity-20'}`}>🔔</button>
+          {/* Bottom Nav Mobile */}
+          <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex justify-around p-4 z-[150] rounded-t-[2.5rem] shadow-2xl">
+             <button onClick={() => setActiveTab('dashboard')} className={`text-2xl transition-all ${activeTab === 'dashboard' ? 'scale-125 text-[#4A5D23] opacity-100' : 'opacity-20'}`}>📊</button>
+             <button onClick={() => setActiveTab('resource')} className={`text-2xl transition-all ${activeTab === 'resource' ? 'scale-125 text-[#4A5D23] opacity-100' : 'opacity-20'}`}>💧</button>
+             <button onClick={() => setActiveTab('soil')} className={`text-2xl transition-all ${activeTab === 'soil' ? 'scale-125 text-[#4A5D23] opacity-100' : 'opacity-20'}`}>🧪</button>
+             <button onClick={() => setActiveTab('alerts')} className={`text-2xl transition-all ${activeTab === 'alerts' ? 'scale-125 text-[#4A5D23] opacity-100' : 'opacity-20'}`}>🔔</button>
+             <button onClick={() => setShowMobileMenu(true)} className="text-2xl opacity-20">⚙️</button>
           </nav>
         </div>
       );
