@@ -586,6 +586,7 @@
       const [activeTab, setActiveTab] = useState('dashboard');
       const [alertFilter, setAlertFilter] = useState('all');
       const [showProfileEditor, setShowProfileEditor] = useState(false);
+      const [showMobileMenu, setShowMobileMenu] = useState(false);
       
       const profFileRef = useRef();
 
@@ -604,6 +605,37 @@
         <div className="flex h-screen w-full bg-[#f8fafc] dark:bg-slate-950 overflow-hidden transition-colors">
           
           <TopControls lang={lang} setLang={setLang} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
+
+          {/* Mobile System Menu Modal (Bottom Sheet) */}
+          {showMobileMenu && (
+            <div className="lg:hidden fixed inset-0 bg-gray-900/60 dark:bg-black/80 z-[600] flex items-end backdrop-blur-sm transition-all" onClick={() => setShowMobileMenu(false)}>
+               <div className="bg-white dark:bg-slate-900 w-full rounded-t-[2.5rem] p-6 pb-10 modal-enter card-shadow border-t border-gray-100 dark:border-slate-800" onClick={e => e.stopPropagation()}>
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-white">{t.system}</h3>
+                    <button onClick={() => setShowMobileMenu(false)} className="text-gray-400 hover:text-gray-600 dark:hover:text-white bg-gray-100 dark:bg-slate-800 p-2 rounded-full transition-colors">
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-3 gap-4">
+                     <button onClick={() => { setActiveTab('robot_list'); setShowMobileMenu(false); }} className={`flex flex-col items-center justify-center p-4 rounded-[1.5rem] transition-all ${activeTab === 'robot_list' ? 'bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800' : 'bg-gray-50 dark:bg-slate-800 border border-transparent'}`}>
+                        <span className="text-3xl mb-2">🤖</span>
+                        <span className={`text-xs font-bold ${activeTab === 'robot_list' ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-600 dark:text-gray-300'}`}>{t.robots}</span>
+                     </button>
+                     <button onClick={() => { setActiveTab('reports'); setShowMobileMenu(false); }} className={`flex flex-col items-center justify-center p-4 rounded-[1.5rem] transition-all ${activeTab === 'reports' ? 'bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800' : 'bg-gray-50 dark:bg-slate-800 border border-transparent'}`}>
+                        <span className="text-3xl mb-2">📈</span>
+                        <span className={`text-xs font-bold ${activeTab === 'reports' ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-600 dark:text-gray-300'}`}>{t.reports}</span>
+                     </button>
+                     <button onClick={() => { setActiveTab('alerts'); setShowMobileMenu(false); }} className={`flex flex-col items-center justify-center p-4 rounded-[1.5rem] transition-all ${activeTab === 'alerts' ? 'bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800' : 'bg-gray-50 dark:bg-slate-800 border border-transparent'}`}>
+                        <div className="relative text-3xl mb-2">
+                           🔔
+                           {alerts.length > 0 && <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-slate-800"></span>}
+                        </div>
+                        <span className={`text-xs font-bold ${activeTab === 'alerts' ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-600 dark:text-gray-300'}`}>{t.alerts}</span>
+                     </button>
+                  </div>
+               </div>
+            </div>
+          )}
 
           {/* Profile Editor Modal */}
           {showProfileEditor && !isGuest && (
@@ -1102,11 +1134,13 @@
                    {item.icon}
                  </button>
                ))}
-               {!isGuest && (
-                 <button onClick={()=>setShowProfileEditor(true)} className="p-2.5 sm:p-3 rounded-2xl text-gray-400 hover:text-gray-600 dark:hover:text-white transition-all">
-                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                 </button>
-               )}
+               {/* Mobile Menu Button */}
+               <button onClick={() => setShowMobileMenu(true)} className={`p-2.5 sm:p-3 rounded-2xl transition-all duration-300 flex flex-col items-center gap-1 ${['robot_list', 'reports', 'alerts'].includes(activeTab) ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 scale-110' : 'text-gray-400 hover:text-gray-600 dark:hover:text-white'}`}>
+                 <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                 </svg>
+                 {alerts.length > 0 && <span className="absolute top-3 right-3 w-2 h-2 bg-red-500 rounded-full"></span>}
+               </button>
             </nav>
           </div>
           
