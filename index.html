@@ -120,6 +120,7 @@
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
 <body class="overflow-x-hidden antialiased bg-[#f8fafc] dark:bg-slate-950 text-gray-800 dark:text-slate-100 transition-colors duration-500 selection:bg-emerald-200 selection:text-emerald-900">
   <div id="root"></div>
@@ -135,14 +136,15 @@
         login: 'เข้าสู่ระบบ',
         platform_desc: 'Farm Management Platform',
         login_google: 'เข้าสู่ระบบด้วย Google',
-        login_email: 'ใช้งานด้วยอีเมล / เบอร์โทร',
-        or_choice: 'ทางเลือก',
-        guest_login: 'เข้าสู่ระบบแบบผู้เยี่ยมชม',
+        random_profile: 'สร้างโปรไฟล์สุ่ม',
+        saved_accounts: 'บัญชีที่บันทึกไว้',
+        or_choice: 'หรือ',
+        guest_login: 'เข้าใช้งานแบบผู้เยี่ยมชม',
         connecting: 'กำลังเชื่อมต่อ...',
-        demo_mode_msg: 'โหมด Preview กำลังจำลองบัญชีผู้ใช้ให้ชั่วคราว...',
+        demo_mode_msg: 'โหมด Preview กำลังจำลองบัญชีให้...',
         guest_mode: '👁️ โหมดผู้เยี่ยมชม (อ่านอย่างเดียว)',
         guest_locked: 'โหมดเยี่ยมชม ไม่สามารถปรับตั้งค่าได้',
-        back_to_login: 'ย้อนกลับไปเข้าสู่ระบบ',
+        back_to_login: 'ย้อนกลับไปหน้าเลือกบัญชี',
         exit: 'ออก',
         dashboard: 'ภาพรวม',
         plant_health: 'สุขภาพพืช',
@@ -153,7 +155,7 @@
         alerts: 'การแจ้งเตือน',
         profile: 'โปรไฟล์',
         save: 'บันทึกข้อมูล',
-        logout: 'ออกจากระบบ',
+        switch_account: 'สลับบัญชี / ออกจากระบบ',
         main_menu: 'เมนูหลัก',
         system: 'ระบบ',
         live_map: 'Live Map',
@@ -196,24 +198,27 @@
         setup_bot: 'ตั้งค่าหุ่นยนต์',
         cancel: 'ยกเลิก',
         go_to_dashboard: 'เข้าสู่ Dashboard',
-        create_profile: 'สร้างโปรไฟล์',
-        setup_desc: 'ตั้งค่าข้อมูลฟาร์มของคุณเพื่อเริ่มต้น',
-        next: 'ถัดไป'
+        create_profile: 'สร้างโปรไฟล์ใหม่',
+        setup_desc: 'ตั้งค่าข้อมูลฟาร์มของคุณให้สมบูรณ์',
+        next: 'เริ่มใช้งาน',
+        switch_acc_btn: 'สลับบัญชี (Switch)',
+        random_avatar: 'สุ่มรูปภาพ'
       },
       en: {
         app_name: 'Farm OS',
         smart_eco: 'Smart Ecosystem',
-        login: 'Login',
+        login: 'Sign In',
         platform_desc: 'Farm Management Platform',
-        login_google: 'Login with Google',
-        login_email: 'Use Email / Phone',
+        login_google: 'Sign in with Google',
+        random_profile: 'Generate Random Profile',
+        saved_accounts: 'Saved Accounts',
         or_choice: 'OR',
-        guest_login: 'Login as Guest',
+        guest_login: 'Continue as Guest',
         connecting: 'Connecting...',
-        demo_mode_msg: 'Preview Mode: Creating temporary demo account...',
+        demo_mode_msg: 'Preview Mode: Creating demo account...',
         guest_mode: '👁️ Guest Mode (Read Only)',
         guest_locked: 'Guest Mode. Settings locked.',
-        back_to_login: 'Back to Login',
+        back_to_login: 'Back to Account Chooser',
         exit: 'Exit',
         dashboard: 'Dashboard',
         plant_health: 'Plant Health',
@@ -224,7 +229,7 @@
         alerts: 'Alerts',
         profile: 'Profile',
         save: 'Save Changes',
-        logout: 'Logout',
+        switch_account: 'Switch Account / Logout',
         main_menu: 'Main Menu',
         system: 'System',
         live_map: 'Live Map',
@@ -267,13 +272,15 @@
         setup_bot: 'Robot Setup',
         cancel: 'Cancel',
         go_to_dashboard: 'Enter Dashboard',
-        create_profile: 'Create Profile',
+        create_profile: 'Complete Profile',
         setup_desc: 'Set up your farm information to begin',
-        next: 'Next'
+        next: 'Start Using',
+        switch_acc_btn: 'Switch Account',
+        random_avatar: 'Random Image'
       }
     };
 
-    const firebaseConfig = {
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
       apiKey: "AIzaSyDs8yRihR4Vz123JRjEA6SWcF-pw77c-qU",
       authDomain: "m4kul-1.firebaseapp.com",
       projectId: "m4kul-1",
@@ -284,6 +291,8 @@
 
     if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
     const auth = firebase.auth();
+    const db = firebase.firestore();
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'farm-os-app';
     
     // Logo Component
     const AppLogo = ({ className }) => (
@@ -293,7 +302,6 @@
         className={`${className} object-contain filter dark:brightness-110`} 
         onError={(e) => {
           e.target.onerror = null;
-          // Fallback if local image missing
           e.target.src = "https://lh3.googleusercontent.com/d/1Idx_06TR21D44uHQjWC1arrQM0hD4LZ8"; 
         }}
       />
@@ -304,11 +312,19 @@
       const [currentScreen, setCurrentScreen] = useState('splash');
       const [authStatus, setAuthStatus] = useState('checking');
       
-      // Global States
       const [lang, setLang] = useState('th');
       const [isDarkMode, setIsDarkMode] = useState(false);
-
       const t = i18n[lang];
+
+      // Multi-Account System State
+      const [savedAccounts, setSavedAccounts] = useState(() => {
+        const saved = localStorage.getItem('farmos_accounts');
+        return saved ? JSON.parse(saved) : [];
+      });
+
+      useEffect(() => {
+        localStorage.setItem('farmos_accounts', JSON.stringify(savedAccounts));
+      }, [savedAccounts]);
 
       useEffect(() => {
         if (isDarkMode) { document.documentElement.classList.add('dark'); } 
@@ -316,7 +332,7 @@
       }, [isDarkMode]);
 
       const [userData, setUserData] = useState({ 
-        name: '', email: '', farmName: '', phone: '', role: 'เจ้าของฟาร์ม', 
+        id: null, isGoogleAuth: false, name: '', email: '', farmName: '', phone: '', role: 'Owner', 
         avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Farmer&backgroundColor=e2e8f0' 
       });
       
@@ -340,41 +356,58 @@
         { id: 3, type: 'info', title: 'หุ่นยนต์เชื่อมต่อสำเร็จ (Bot Connected)', zone: 'System', time: '2 hrs ago', detail: 'FarmBot-Beta ออนไลน์' },
       ]);
 
+      // Load Robots uniquely for each Account
       useEffect(() => {
-        const unsubscribe = auth.onAuthStateChanged((user) => {
-          if (user) {
-            setUserData(prev => ({ ...prev, name: user.displayName || 'User', email: user.email, avatar: user.photoURL || prev.avatar, role: 'Owner' }));
-            setAuthStatus('logged_in');
-          } else { setAuthStatus('logged_out'); }
-        });
-        return () => unsubscribe();
-      }, []);
-
-      useEffect(() => {
-        if (currentScreen === 'login' && authStatus === 'logged_in' && userData.role !== 'guest') { 
-          setCurrentScreen('dashboard'); 
+        if (userData.role !== 'guest' && userData.id) {
+          if (userData.isGoogleAuth && auth.currentUser) {
+            // Load from Firebase
+            const userId = auth.currentUser.uid;
+            const robotsRef = db.collection('artifacts').doc(appId).collection('users').doc(userId).collection('robots');
+            const unsubscribe = robotsRef.onSnapshot(snapshot => {
+              if (!snapshot.empty) {
+                const loadedRobots = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.data().id || doc.id }));
+                setRobots(loadedRobots);
+              } else {
+                robots.forEach(bot => robotsRef.doc(bot.id.toString()).set(bot));
+              }
+            }, (error) => console.error("Error loading robots:", error));
+            return () => unsubscribe();
+          } else {
+            // Load from LocalStorage for local random profiles
+            const localRobots = localStorage.getItem('farmos_robots_' + userData.id);
+            if (localRobots) {
+              setRobots(JSON.parse(localRobots));
+            } else {
+              localStorage.setItem('farmos_robots_' + userData.id, JSON.stringify(robots));
+            }
+          }
         }
-      }, [currentScreen, authStatus]);
+      }, [userData.id, userData.role, userData.isGoogleAuth]);
 
       const navigate = (screen) => setCurrentScreen(screen);
 
       const handleLogout = () => {
-        auth.signOut().catch(()=>{}); // ignore errors for guest
-        setUserData({ name: '', email: '', farmName: '', phone: '', role: 'Owner', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Farmer&backgroundColor=e2e8f0' });
+        if (userData.isGoogleAuth && auth.currentUser) { auth.signOut().catch(()=>{}); }
+        setUserData({ id: null, isGoogleAuth: false, name: '', email: '', farmName: '', phone: '', role: 'Owner', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Farmer&backgroundColor=e2e8f0' });
         navigate('login');
       };
 
-      const sharedProps = { t, lang, setLang, isDarkMode, setIsDarkMode };
+      const sharedProps = { t, lang, setLang, isDarkMode, setIsDarkMode, savedAccounts, setSavedAccounts };
 
       return (
         <div className="min-h-screen font-sans">
           {currentScreen === 'splash' && <SplashScreen onFinish={() => navigate('login')} t={t} />}
-          {currentScreen === 'login' && <LoginScreen onNext={() => navigate('register')} onGuest={() => {
-             setUserData({...userData, name: lang==='th'?'ผู้เยี่ยมชม':'Guest User', farmName: 'Demo Farm', role: 'guest', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Guest&backgroundColor=f3f4f6'});
-             navigate('dashboard');
-          }} setUserData={setUserData} userData={userData} {...sharedProps} />}
+          {currentScreen === 'login' && <LoginScreen 
+            onRegister={() => navigate('register')} 
+            onLoginDirect={() => navigate('dashboard')}
+            onGuest={() => {
+              setUserData({...userData, id: 'guest_'+Date.now(), name: lang==='th'?'ผู้เยี่ยมชม':'Guest User', farmName: 'Demo Farm', role: 'guest', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Guest&backgroundColor=f3f4f6'});
+              navigate('dashboard');
+            }} 
+            setUserData={setUserData} userData={userData} {...sharedProps} 
+          />}
           {currentScreen === 'register' && <RegisterScreen userData={userData} setUserData={setUserData} onNext={() => navigate('robot_setup')} {...sharedProps} />}
-          {currentScreen === 'robot_setup' && <RobotSetup robots={robots} setRobots={setRobots} onNext={() => navigate('dashboard')} {...sharedProps} />}
+          {currentScreen === 'robot_setup' && <RobotSetup userData={userData} robots={robots} setRobots={setRobots} onNext={() => navigate('dashboard')} {...sharedProps} />}
           {currentScreen === 'dashboard' && (
             <FarmOS 
               userData={userData} setUserData={setUserData}
@@ -405,7 +438,6 @@
     );
 
     // --- Screens ---
-
     const SplashScreen = ({ onFinish, t }) => {
       useEffect(() => { const timer = setTimeout(onFinish, 2500); return () => clearTimeout(timer); }, [onFinish]);
       return (
@@ -423,54 +455,116 @@
       );
     };
 
-    const LoginScreen = ({ onNext, onGuest, setUserData, userData, t, lang, setLang, isDarkMode, setIsDarkMode }) => {
+    const LoginScreen = ({ onRegister, onLoginDirect, onGuest, setUserData, userData, savedAccounts, setSavedAccounts, t, lang, setLang, isDarkMode, setIsDarkMode }) => {
       const [isLoading, setIsLoading] = useState(false);
       const [errorMsg, setErrorMsg] = useState('');
+
+      const loginWithSaved = (acc) => {
+        setUserData(acc);
+        onLoginDirect();
+      };
+
+      const removeAccount = (id) => {
+        setSavedAccounts(prev => prev.filter(acc => acc.id !== id));
+      };
 
       const handleGoogleLogin = () => {
         setIsLoading(true); setErrorMsg('');
         const provider = new firebase.auth.GoogleAuthProvider();
         auth.signInWithPopup(provider)
           .then((result) => {
-            setUserData({ ...userData, name: result.user.displayName, email: result.user.email, avatar: result.user.photoURL, role: 'Owner' });
-            setIsLoading(false); onNext();
+            const newAcc = { 
+              id: result.user.uid, isGoogleAuth: true, name: result.user.displayName, email: result.user.email, 
+              avatar: result.user.photoURL, farmName: lang === 'th' ? `ฟาร์มของ ${result.user.displayName}` : `${result.user.displayName}'s Farm`, role: 'Owner' 
+            };
+            if (!savedAccounts.find(a => a.id === newAcc.id)) { setSavedAccounts(prev => [...prev, newAcc]); }
+            setUserData(newAcc);
+            setIsLoading(false); 
+            // If new account, let them set up profile, else go direct
+            savedAccounts.find(a => a.id === newAcc.id) ? onLoginDirect() : onRegister();
           })
           .catch((error) => {
             setIsLoading(false);
             if (error.code === 'auth/unauthorized-domain' || error.code === 'auth/operation-not-supported-in-this-environment') {
               setErrorMsg(t.demo_mode_msg);
-              setTimeout(() => { setUserData({...userData, name: 'Demo Owner', role: 'Owner'}); onNext(); }, 2000);
+              setTimeout(() => { createRandomProfile(); }, 2000);
             } else { setErrorMsg(error.message); }
           });
       };
 
+      const createRandomProfile = () => {
+        const namesTh = ['สมชาย', 'มานะ', 'สมหญิง', 'ลุงจอน', 'ลุงพล'];
+        const farmsTh = ['ฟาร์มสุขใจ', 'ฟาร์มพอเพียง', 'ไร่ตะวัน', 'ฟาร์มรักษ์โลก'];
+        const namesEn = ['John', 'Alice', 'Bob', 'Emma', 'David'];
+        const farmsEn = ['Happy Farm', 'Sunrise Valley', 'Green Acres', 'Eco Farm'];
+        
+        const randomName = lang === 'th' ? namesTh[Math.floor(Math.random() * namesTh.length)] : namesEn[Math.floor(Math.random() * namesEn.length)];
+        const randomFarm = lang === 'th' ? farmsTh[Math.floor(Math.random() * farmsTh.length)] : farmsEn[Math.floor(Math.random() * farmsEn.length)];
+        const randomSeed = Math.random().toString(36).substring(7);
+        
+        const newAcc = {
+          id: 'local_' + Date.now(),
+          isGoogleAuth: false,
+          name: randomName,
+          farmName: randomFarm,
+          role: 'Owner',
+          avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${randomSeed}&backgroundColor=e2e8f0`
+        };
+        
+        setSavedAccounts(prev => [newAcc, ...prev]);
+        setUserData(newAcc);
+        onLoginDirect();
+      };
+
       return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-gray-50 dark:bg-slate-950 relative transition-colors duration-500">
+        <div className="flex flex-col items-center justify-center min-h-screen p-4 sm:p-6 bg-gray-50 dark:bg-slate-950 relative transition-colors duration-500">
           <TopControls lang={lang} setLang={setLang} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
           
           <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-emerald-400 dark:bg-emerald-700 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-[128px] opacity-40 dark:opacity-20 animate-blob"></div>
           <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-blue-400 dark:bg-blue-700 rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-[128px] opacity-40 dark:opacity-20 animate-blob animation-delay-2000"></div>
           
           <div className="w-full max-w-md bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-8 sm:p-12 rounded-[2.5rem] card-shadow border border-white dark:border-slate-800 relative z-10 modal-enter">
-            <div className="text-center mb-10">
-              <AppLogo className="w-20 h-20 mx-auto mb-6 drop-shadow-md" />
-              <h2 className="text-3xl font-bold text-gray-800 dark:text-white tracking-tight">{t.login}</h2>
-              <p className="text-gray-500 dark:text-gray-400 mt-2 text-sm">{t.platform_desc}</p>
+            <div className="text-center mb-8">
+              <AppLogo className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 drop-shadow-md" />
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white tracking-tight">{t.login}</h2>
+              <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">{t.platform_desc}</p>
             </div>
             
-            <div className="space-y-4">
-              <button onClick={handleGoogleLogin} disabled={isLoading} className="w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-200 py-4 rounded-2xl font-semibold hover:bg-gray-50 dark:hover:bg-slate-700 focus:ring-4 focus:ring-emerald-100 flex items-center justify-center gap-3 transition-all active:scale-[0.98] shadow-sm">
+            <div className="space-y-4 w-full">
+              {/* Saved Accounts List */}
+              {savedAccounts.length > 0 && (
+                <div className="mb-6 w-full text-left">
+                   <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest mb-3 pl-2">{t.saved_accounts}</p>
+                   <div className="space-y-2 max-h-[220px] overflow-y-auto hide-scrollbar">
+                     {savedAccounts.map(acc => (
+                       <div key={acc.id} onClick={() => loginWithSaved(acc)} className="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-[1.5rem] cursor-pointer hover:border-emerald-400 dark:hover:border-emerald-500 transition-all group shadow-sm hover:shadow-md">
+                          <img src={acc.avatar} className="w-12 h-12 rounded-full object-cover border-2 border-white dark:border-slate-700 shadow-sm" />
+                          <div className="flex-1 overflow-hidden">
+                            <p className="text-sm font-bold text-gray-800 dark:text-white truncate">{acc.name}</p>
+                            <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold truncate">{acc.farmName}</p>
+                          </div>
+                          <button onClick={(e) => { e.stopPropagation(); removeAccount(acc.id); }} className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-xl transition-colors md:opacity-0 md:group-hover:opacity-100">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                          </button>
+                       </div>
+                     ))}
+                   </div>
+                </div>
+              )}
+
+              <button onClick={handleGoogleLogin} disabled={isLoading} className="w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-200 py-3.5 rounded-2xl font-semibold hover:bg-gray-50 dark:hover:bg-slate-700 flex items-center justify-center gap-3 transition-all active:scale-[0.98] shadow-sm">
                 <svg className="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/><path fill="none" d="M1 1h22v22H1z"/></svg>
                 {isLoading ? t.connecting : t.login_google}
               </button>
-              
-              <button onClick={onNext} className="w-full bg-gray-900 dark:bg-emerald-600 text-white py-4 rounded-2xl font-semibold hover:bg-gray-800 dark:hover:bg-emerald-500 shadow-md transition-all active:scale-[0.98]">
-                {t.login_email}
+
+              <button onClick={createRandomProfile} className="w-full bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 py-3.5 rounded-2xl font-semibold hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-all active:scale-[0.98] shadow-sm flex items-center justify-center gap-2 border border-emerald-100 dark:border-transparent">
+                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                 {t.random_profile}
               </button>
 
               <div className="relative flex items-center py-2">
                 <div className="flex-grow border-t border-gray-200 dark:border-slate-700"></div>
-                <span className="flex-shrink-0 mx-4 text-gray-400 dark:text-gray-500 text-xs uppercase tracking-widest">{t.or_choice}</span>
+                <span className="flex-shrink-0 mx-4 text-gray-400 dark:text-gray-500 text-[10px] uppercase tracking-widest">{t.or_choice}</span>
                 <div className="flex-grow border-t border-gray-200 dark:border-slate-700"></div>
               </div>
 
@@ -485,37 +579,86 @@
       );
     };
 
-    const RegisterScreen = ({ userData, setUserData, onNext, t, lang, setLang, isDarkMode, setIsDarkMode }) => {
+    const RegisterScreen = ({ userData, setUserData, savedAccounts, setSavedAccounts, onNext, t, lang, setLang, isDarkMode, setIsDarkMode }) => {
       const fileRef = useRef();
       const handleImg = (e) => {
         const r = new FileReader(); r.onload = (ev) => setUserData({...userData, avatar: ev.target.result}); r.readAsDataURL(e.target.files[0]);
       };
+      
+      const handleSaveAndNext = () => {
+         const newAcc = { ...userData, id: userData.id || 'local_' + Date.now() };
+         const existingIndex = savedAccounts.findIndex(a => a.id === newAcc.id);
+         if (existingIndex >= 0) {
+            const newSaved = [...savedAccounts];
+            newSaved[existingIndex] = newAcc;
+            setSavedAccounts(newSaved);
+         } else {
+            setSavedAccounts([newAcc, ...savedAccounts]);
+         }
+         setUserData(newAcc);
+         onNext();
+      };
+
       return (
         <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-50 dark:bg-slate-950 transition-colors">
           <TopControls lang={lang} setLang={setLang} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
           <div className="w-full max-w-md bg-white dark:bg-slate-900 p-8 sm:p-12 rounded-[2.5rem] card-shadow border border-gray-100 dark:border-slate-800 modal-enter">
-            <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-2 text-center">{t.create_profile}</h2>
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2 text-center">{t.create_profile}</h2>
             <p className="text-gray-500 dark:text-gray-400 mb-8 text-center text-sm">{t.setup_desc}</p>
-            <div className="relative w-32 h-32 mx-auto mb-8 group cursor-pointer" onClick={() => fileRef.current.click()}>
+            <div className="relative w-28 h-28 mx-auto mb-8 group cursor-pointer" onClick={() => fileRef.current.click()}>
               <div className="absolute inset-0 rounded-full border-4 border-emerald-100 dark:border-emerald-800 group-hover:border-emerald-300 dark:group-hover:border-emerald-600 transition-colors"></div>
               <img src={userData.avatar} className="w-full h-full rounded-full object-cover p-1" />
               <div className="absolute bottom-1 right-1 bg-emerald-500 text-white p-2 rounded-full shadow-lg hover:scale-110 transition-transform"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></div>
+              <button title={t.random_avatar} onClick={(e) => { e.stopPropagation(); setUserData({...userData, avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${Math.random().toString(36).substring(7)}&backgroundColor=e2e8f0`}); }} className="absolute bottom-1 left-1 bg-blue-500 text-white p-2 rounded-full shadow-lg hover:scale-110 transition-transform"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></button>
               <input type="file" ref={fileRef} className="hidden" accept="image/*" onChange={handleImg} />
             </div>
-            <div className="space-y-5">
+            <div className="space-y-4">
               <div><label className="text-xs font-semibold text-gray-500 dark:text-gray-400 ml-1 mb-1 block">{t.name}</label><input type="text" className="w-full border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 p-4 rounded-2xl text-gray-800 dark:text-white placeholder-gray-400 transition-all" value={userData.name} onChange={e => setUserData({...userData, name: e.target.value})} /></div>
               <div><label className="text-xs font-semibold text-gray-500 dark:text-gray-400 ml-1 mb-1 block">{t.farm_name}</label><input type="text" className="w-full border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 p-4 rounded-2xl text-gray-800 dark:text-white placeholder-gray-400 transition-all" value={userData.farmName} onChange={e => setUserData({...userData, farmName: e.target.value})} /></div>
             </div>
-            <button onClick={onNext} className="w-full mt-10 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-emerald-500/30 hover:-translate-y-0.5 transition-all">{t.next}</button>
+            <button onClick={handleSaveAndNext} className="w-full mt-10 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-emerald-500/30 hover:-translate-y-0.5 transition-all">{t.next}</button>
           </div>
         </div>
       );
     };
 
-    const RobotSetup = ({ robots, setRobots, onNext, t, lang, setLang, isDarkMode, setIsDarkMode }) => {
+    const RobotSetup = ({ userData, robots, setRobots, onNext, t, lang, setLang, isDarkMode, setIsDarkMode }) => {
        const [editingBot, setEditingBot] = useState(null);
        const [isManage, setIsManage] = useState(false);
        const botFileRef = useRef();
+
+       const handleSaveBot = () => {
+         if (userData.role !== 'guest') {
+           if (userData.isGoogleAuth && auth.currentUser) {
+             const userId = auth.currentUser.uid;
+             db.collection('artifacts').doc(appId).collection('users').doc(userId).collection('robots').doc(editingBot.id.toString()).set(editingBot);
+           } else {
+             const newRobots = robots.find(r=>r.id===editingBot.id) ? robots.map(r=>r.id===editingBot.id?editingBot:r) : [...robots, editingBot];
+             setRobots(newRobots);
+             localStorage.setItem('farmos_robots_' + userData.id, JSON.stringify(newRobots));
+           }
+         } else {
+           if(robots.find(r=>r.id===editingBot.id)) { setRobots(robots.map(r=>r.id===editingBot.id?editingBot:r)); } 
+           else { setRobots([...robots, editingBot]); }
+         }
+         setEditingBot(null);
+       };
+
+       const handleDeleteBot = (botId) => {
+         if (userData.role !== 'guest') {
+           if (userData.isGoogleAuth && auth.currentUser) {
+             const userId = auth.currentUser.uid;
+             db.collection('artifacts').doc(appId).collection('users').doc(userId).collection('robots').doc(botId.toString()).delete();
+           } else {
+             const newRobots = robots.filter(b => b.id !== botId);
+             setRobots(newRobots);
+             localStorage.setItem('farmos_robots_' + userData.id, JSON.stringify(newRobots));
+           }
+         } else {
+           setRobots(robots.filter(b => b.id !== botId));
+         }
+       };
+
        return (
         <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-gray-50 dark:bg-slate-950 transition-colors">
           <TopControls lang={lang} setLang={setLang} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
@@ -526,6 +669,7 @@
                  <div className="absolute inset-0 bg-gray-100 dark:bg-slate-800 rounded-2xl group-hover:bg-gray-200 dark:group-hover:bg-slate-700 transition-colors"></div>
                  <img src={editingBot.image} className="w-full h-full rounded-2xl object-cover p-2 relative z-10" />
                  <div className="absolute -bottom-3 -right-3 bg-emerald-500 text-white p-2 rounded-xl shadow-lg z-20 hover:scale-110 transition-transform"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></div>
+                 <button title={t.random_avatar} onClick={(e) => { e.stopPropagation(); setEditingBot({...editingBot, image: `https://api.dicebear.com/7.x/bottts/svg?seed=${Math.random().toString(36).substring(7)}&backgroundColor=f3f4f6`}); }} className="absolute -bottom-3 -left-3 bg-blue-500 text-white p-2 rounded-xl shadow-lg z-20 hover:scale-110 transition-transform"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></button>
                  <input type="file" ref={botFileRef} className="hidden" accept="image/*" onChange={(e)=>{ const r = new FileReader(); r.onload=(ev)=>setEditingBot({...editingBot, image: ev.target.result}); r.readAsDataURL(e.target.files[0]); }} />
               </div>
               <div className="space-y-4 mb-8">
@@ -533,7 +677,7 @@
               </div>
               <div className="flex gap-3">
                 <button onClick={() => setEditingBot(null)} className="flex-1 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 py-3.5 rounded-xl font-semibold text-gray-600 dark:text-gray-300">{t.cancel}</button>
-                <button onClick={() => { if(robots.find(r=>r.id===editingBot.id)) { setRobots(robots.map(r=>r.id===editingBot.id?editingBot:r)); } else { setRobots([...robots, editingBot]); } setEditingBot(null); }} className="flex-1 bg-emerald-500 text-white py-3.5 rounded-xl font-semibold shadow-lg shadow-emerald-500/30">{t.save}</button>
+                <button onClick={handleSaveBot} className="flex-1 bg-emerald-500 text-white py-3.5 rounded-xl font-semibold shadow-lg shadow-emerald-500/30">{t.save}</button>
               </div>
             </div>
           ) : (
@@ -543,7 +687,7 @@
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:flex lg:flex-wrap justify-center gap-6 md:gap-8 w-full max-w-2xl lg:max-w-none">
                 {robots.map(r => (
                   <div key={r.id} className="relative flex flex-col items-center group">
-                    {isManage && <button onClick={() => setRobots(robots.filter(b => b.id !== r.id))} className="absolute -top-3 -right-3 md:-top-2 md:-right-2 bg-red-500 text-white w-8 h-8 rounded-full z-10 font-bold shadow-lg flex items-center justify-center">✕</button>}
+                    {isManage && <button onClick={() => handleDeleteBot(r.id)} className="absolute -top-3 -right-3 md:-top-2 md:-right-2 bg-red-500 text-white w-8 h-8 rounded-full z-10 font-bold shadow-lg flex items-center justify-center">✕</button>}
                     <div onClick={() => isManage && setEditingBot(r)} className={`w-32 h-32 md:w-40 md:h-40 rounded-[2rem] bg-white dark:bg-slate-800 card-shadow flex items-center justify-center overflow-hidden border-2 ${isManage ? 'border-blue-400 cursor-pointer scale-105' : 'border-transparent dark:border-slate-700'} transition-all duration-300 relative`}><img src={r.image} className="w-[80%] h-[80%] object-contain relative z-10 group-hover:scale-110 transition-transform duration-500" /></div>
                     <p className="mt-4 font-semibold text-sm text-gray-700 dark:text-gray-300 text-center w-full truncate px-2">{r.name}</p>
                   </div>
@@ -567,7 +711,6 @@
       const radius = (size - strokeWidth) / 2;
       const circumference = 2 * Math.PI * radius;
       const strokeDashoffset = circumference - (value / 100) * circumference;
-      // Make size responsive
       return (
         <div className="relative flex items-center justify-center my-2 w-[140px] h-[140px] md:w-[180px] md:h-[180px]">
           <svg className="absolute inset-0 w-full h-full transform -rotate-90 drop-shadow-sm" viewBox={`0 0 ${size} ${size}`}>
@@ -582,7 +725,7 @@
     };
 
     // --- Main Dashboard (FarmOS) ---
-    const FarmOS = ({ userData, setUserData, robots, setRobots, plantZones, setPlantZones, soilStats, setSoilStats, alerts, onLogout, setCurrentScreen, t, lang, setLang, isDarkMode, setIsDarkMode }) => {
+    const FarmOS = ({ userData, setUserData, robots, setRobots, plantZones, setPlantZones, soilStats, setSoilStats, alerts, onLogout, setCurrentScreen, t, lang, setLang, isDarkMode, setIsDarkMode, savedAccounts, setSavedAccounts }) => {
       const [activeTab, setActiveTab] = useState('dashboard');
       const [alertFilter, setAlertFilter] = useState('all');
       const [showProfileEditor, setShowProfileEditor] = useState(false);
@@ -600,6 +743,16 @@
       ];
 
       const filteredAlerts = alertFilter === 'all' ? alerts : alerts.filter(a => a.type === alertFilter);
+
+      const handleSaveProfile = () => {
+         const existingIndex = savedAccounts.findIndex(a => a.id === userData.id);
+         if (existingIndex >= 0) {
+            const newSaved = [...savedAccounts];
+            newSaved[existingIndex] = userData;
+            setSavedAccounts(newSaved);
+         }
+         setShowProfileEditor(false);
+      };
 
       return (
         <div className="flex h-screen w-full bg-[#f8fafc] dark:bg-slate-950 overflow-hidden transition-colors">
@@ -648,9 +801,12 @@
                   <div className="relative w-24 h-24 mx-auto mb-8 group cursor-pointer" onClick={()=>profFileRef.current.click()}>
                     <div className="absolute inset-0 rounded-full border-2 border-emerald-100 dark:border-emerald-800 group-hover:border-emerald-300 transition-colors"></div>
                     <img src={userData.avatar} className="w-full h-full rounded-full object-cover p-1" />
-                    <div className="absolute bottom-0 right-0 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-1.5 rounded-full shadow-sm text-gray-600 dark:text-gray-300">
+                    <div className="absolute bottom-0 right-0 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-1.5 rounded-full shadow-sm text-gray-600 dark:text-gray-300 hover:text-emerald-500 transition-colors">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path></svg>
                     </div>
+                    <button title={t.random_avatar} onClick={(e) => { e.stopPropagation(); setUserData({...userData, avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${Math.random().toString(36).substring(7)}&backgroundColor=e2e8f0`}); }} className="absolute bottom-0 left-0 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 p-1.5 rounded-full shadow-sm text-gray-600 dark:text-gray-300 hover:text-blue-500 transition-colors">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    </button>
                     <input type="file" ref={profFileRef} className="hidden" accept="image/*" onChange={(e)=>{
                       const r = new FileReader(); r.onload = (ev) => setUserData({...userData, avatar: ev.target.result}); r.readAsDataURL(e.target.files[0]);
                     }} />
@@ -665,8 +821,8 @@
                       <input type="text" className="w-full border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-800 p-3.5 rounded-xl text-gray-800 dark:text-white" value={userData.farmName} onChange={e=>setUserData({...userData, farmName: e.target.value})} />
                     </div>
                   </div>
-                  <button onClick={() => setShowProfileEditor(false)} className="w-full bg-emerald-500 text-white py-3.5 rounded-xl font-semibold shadow-md hover:bg-emerald-600 transition-colors mb-3">{t.save}</button>
-                  <button onClick={() => {setShowProfileEditor(false); onLogout();}} className="w-full bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 py-3.5 rounded-xl font-semibold hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors">{t.logout}</button>
+                  <button onClick={handleSaveProfile} className="w-full bg-emerald-500 text-white py-3.5 rounded-xl font-semibold shadow-md hover:bg-emerald-600 transition-colors mb-3">{t.save}</button>
+                  <button onClick={() => {setShowProfileEditor(false); onLogout();}} className="w-full bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 py-3.5 rounded-xl font-semibold hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors">{t.switch_acc_btn}</button>
                </div>
             </div>
           )}
@@ -728,7 +884,7 @@
                         <img src={userData.avatar} className="w-10 h-10 rounded-full object-cover border-2 border-white dark:border-slate-700 shadow-sm" />
                         <div className="overflow-hidden flex-1">
                           <p className="text-sm font-bold text-gray-800 dark:text-white truncate">{userData.name}</p>
-                          <p className="text-[10px] text-gray-500 dark:text-gray-400">{userData.role}</p>
+                          <p className="text-[10px] text-gray-500 dark:text-gray-400">{t.switch_account}</p>
                         </div>
                         <svg className="w-4 h-4 text-gray-400 group-hover:text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
                     </div>
