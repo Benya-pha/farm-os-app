@@ -6,33 +6,93 @@
   <title>Farm OS | Smart Agriculture Dashboard</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- ฟอนต์ Itim สำหรับความโค้งมน -->
-  <link href="https://fonts.googleapis.com/css2?family=Itim&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
   <style>
-    body { font-family: 'Itim', cursive; background-color: #FDFCF0; -webkit-tap-highlight-color: transparent; }
+    :root {
+      --primary: #10b981; /* Emerald 500 */
+      --primary-dark: #059669; /* Emerald 600 */
+      --surface: #ffffff;
+      --background: #f3f4f6; /* Gray 100 */
+    }
+
+    body { 
+      font-family: 'Prompt', sans-serif; 
+      background-color: var(--background); 
+      -webkit-tap-highlight-color: transparent; 
+      color: #1f2937;
+    }
+
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     
-    .modal-enter { animation: zoomIn 0.3s ease-out; }
-    @keyframes zoomIn {
-      from { opacity: 0; transform: scale(0.95); }
-      to { opacity: 1; transform: scale(1); }
+    .modal-enter { animation: modalFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.95) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
     }
     
-    .area-chart-path { transition: d 0.6s ease-in-out; }
+    .area-chart-path { 
+      transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1); 
+      stroke-dasharray: 2000;
+      stroke-dashoffset: 0;
+      animation: drawLine 1.5s ease-out forwards;
+    }
+
+    @keyframes drawLine {
+      from { stroke-dashoffset: 2000; }
+      to { stroke-dashoffset: 0; }
+    }
     
-    /* Earth Tone Utilities */
-    .bg-earth-beige { background-color: #FDFCF0; }
-    .bg-earth-sidebar { background-color: #EAE4D3; }
-    .bg-earth-green { background-color: #4A5D23; }
-    .text-earth-green { color: #4A5D23; }
-    .border-earth-green { border-color: #4A5D23; }
+    /* Custom Utilities */
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+
+    .glass-nav {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.05);
+      border-top: 1px solid rgba(255,255,255,0.8);
+    }
+
+    .card-shadow {
+      box-shadow: 0 10px 40px -10px rgba(0,0,0,0.06);
+    }
+
+    /* Farm Map Realistic Grid */
+    .farm-pattern {
+      background-color: #e0e7ff; /* light indigo */
+      background-image: 
+        linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
     
-    /* Range input styling */
-    input[type=range] { -webkit-appearance: none; background: transparent; }
-    input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 8px; cursor: pointer; background: #e5e7eb; border-radius: 10px; }
-    input[type=range]::-webkit-slider-thumb { height: 20px; width: 20px; border-radius: 50%; background: #4A5D23; cursor: pointer; -webkit-appearance: none; margin-top: -6px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    .gradient-text {
+      background: linear-gradient(135deg, var(--primary-dark), #34d399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Input Focus Styles */
+    input[type="text"]:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+      border-color: var(--primary);
+    }
+    
+    input[type="range"] {
+      accent-color: var(--primary);
+    }
+    input[type="range"]:disabled {
+      accent-color: #9ca3af;
+      cursor: not-allowed;
+    }
   </style>
 
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -43,7 +103,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
 </head>
-<body class="text-[#3E3A34] overflow-x-hidden">
+<body class="overflow-x-hidden antialiased selection:bg-emerald-200 selection:text-emerald-900">
   <div id="root"></div>
 
   <script type="text/babel">
@@ -55,47 +115,47 @@
       projectId: "m4kul-1",
       storageBucket: "m4kul-1.firebasestorage.app",
       messagingSenderId: "973526589558",
-      appId: "1:973526589558:web:01a944e291077e240bff57",
-      measurementId: "G-7QT0GT3J9J"
+      appId: "1:973526589558:web:01a944e291077e240bff57"
     };
 
     if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
     const auth = firebase.auth();
     
-    // Direct Image Link Fix
     const APP_LOGO = "https://lh3.googleusercontent.com/d/1Idx_06TR21D44uHQjWC1arrQM0hD4LZ8";
 
+    // --- Main App Component ---
     function App() {
       const [currentScreen, setCurrentScreen] = useState('splash');
       const [authStatus, setAuthStatus] = useState('checking');
       const [userData, setUserData] = useState({ 
         name: '', email: '', farmName: '', phone: '', role: 'เจ้าของฟาร์ม', 
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Somchai' 
+        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Farmer&backgroundColor=e2e8f0' 
       });
       
       const [robots, setRobots] = useState([
-        { id: 1, name: 'FarmBot-Alpha', ip: '192.168.1.101', status: 'สแกนโรคพืช', battery: 85, image: 'https://api.dicebear.com/7.x/bottts/svg?seed=Alpha' },
-        { id: 2, name: 'FarmBot-Beta', ip: '192.168.1.102', status: 'สแตนด์บาย', battery: 100, image: 'https://api.dicebear.com/7.x/bottts/svg?seed=Beta' },
+        { id: 1, name: 'FarmBot-Alpha', ip: '192.168.1.101', status: 'สแกนโรคพืช', battery: 85, image: 'https://api.dicebear.com/7.x/bottts/svg?seed=Alpha&backgroundColor=dcfce7' },
+        { id: 2, name: 'FarmBot-Beta', ip: '192.168.1.102', status: 'ออนไลน์', battery: 100, image: 'https://api.dicebear.com/7.x/bottts/svg?seed=Beta&backgroundColor=e0e7ff' },
       ]);
 
-      // State สำหรับโซนพืช (ต้องถูกส่งไป FarmOS ด้วย)
       const [plantZones, setPlantZones] = useState([
-        { id: 'A', name: 'ผักสลัด', moisture: 45, temp: 28, health: 95 },
-        { id: 'B', name: 'มะเขือเทศ', moisture: 30, temp: 31, health: 65 },
+        { id: 'A', name: 'แปลงสลัด A', moisture: 45, health: 95, icon: '🥬', top: '15%', left: '15%', color: 'from-green-400 to-green-300' },
+        { id: 'B', name: 'มะเขือเทศ B', moisture: 30, health: 65, icon: '🍅', top: '15%', left: '60%', color: 'from-red-400 to-red-300' },
+        { id: 'C', name: 'แปลงเมลอน C', moisture: 38, health: 82, icon: '🍈', top: '55%', left: '15%', color: 'from-yellow-400 to-orange-300' },
+        { id: 'D', name: 'สตรอว์เบอร์รี D', moisture: 52, health: 88, icon: '🍓', top: '55%', left: '60%', color: 'from-pink-400 to-rose-300' },
       ]);
 
       const [soilStats, setSoilStats] = useState({ N: 65, P: 40, K: 55, moisture: 45 });
       
       const [alerts] = useState([
-        { id: 1, type: 'critical', title: 'พบร่องรอยโรคราน้ำค้าง', zone: 'โซน B', time: '10 นาทีที่แล้ว', detail: 'AI ตรวจพบความผิดปกติบนใบ' },
-        { id: 2, type: 'warning', title: 'ความชื้นดินต่ำกว่าเกณฑ์', zone: 'โซน B', time: '1 ชั่วโมงที่แล้ว', detail: 'ความชื้นลดลงเหลือ 30%' },
-        { id: 3, type: 'info', title: 'ระบบอัปเดตซอฟต์แวร์', zone: 'หุ่นยนต์', time: '5 ชั่วโมงที่แล้ว', detail: 'FarmBot ทุกตัวอัปเดตเป็น v2.1' },
+        { id: 1, type: 'critical', title: 'พบเชื้อราในมะเขือเทศ', zone: 'โซน B', time: '10 นาทีที่แล้ว', detail: 'AI ตรวจพบความผิดปกติบนใบ 94%' },
+        { id: 2, type: 'warning', title: 'ดินโซน B แห้งเกินไป', zone: 'โซน B', time: '1 ชั่วโมงที่แล้ว', detail: 'ความชื้นลดลงเหลือ 30%' },
+        { id: 3, type: 'info', title: 'หุ่นยนต์เชื่อมต่อสำเร็จ', zone: 'ระบบ', time: '2 ชั่วโมงที่แล้ว', detail: 'FarmBot-Beta ออนไลน์' },
       ]);
 
       useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((user) => {
           if (user) {
-            setUserData(prev => ({ ...prev, name: user.displayName, email: user.email, avatar: user.photoURL || prev.avatar }));
+            setUserData(prev => ({ ...prev, name: user.displayName || 'ผู้ใช้', email: user.email, avatar: user.photoURL || prev.avatar, role: 'เจ้าของฟาร์ม' }));
             setAuthStatus('logged_in');
           } else { setAuthStatus('logged_out'); }
         });
@@ -103,15 +163,26 @@
       }, []);
 
       useEffect(() => {
-        if (currentScreen === 'login' && authStatus === 'logged_in') { setCurrentScreen('dashboard'); }
+        if (currentScreen === 'login' && authStatus === 'logged_in' && userData.role !== 'guest') { 
+          setCurrentScreen('dashboard'); 
+        }
       }, [currentScreen, authStatus]);
 
       const navigate = (screen) => setCurrentScreen(screen);
 
+      const handleLogout = () => {
+        auth.signOut().catch(()=>{}); // ignore errors for guest
+        setUserData({ name: '', email: '', farmName: '', phone: '', role: 'เจ้าของฟาร์ม', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Farmer&backgroundColor=e2e8f0' });
+        navigate('login');
+      };
+
       return (
         <div className="min-h-screen">
           {currentScreen === 'splash' && <SplashScreen onFinish={() => navigate('login')} />}
-          {currentScreen === 'login' && <LoginScreen onNext={() => navigate('register')} setUserData={setUserData} userData={userData} />}
+          {currentScreen === 'login' && <LoginScreen onNext={() => navigate('register')} onGuest={() => {
+             setUserData({...userData, name: 'ผู้เยี่ยมชม', farmName: 'Demo Farm', role: 'guest', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Guest&backgroundColor=f3f4f6'});
+             navigate('dashboard');
+          }} setUserData={setUserData} userData={userData} />}
           {currentScreen === 'register' && <RegisterScreen userData={userData} setUserData={setUserData} onNext={() => navigate('robot_setup')} />}
           {currentScreen === 'robot_setup' && <RobotSetup robots={robots} setRobots={setRobots} onNext={() => navigate('dashboard')} />}
           {currentScreen === 'dashboard' && (
@@ -121,7 +192,7 @@
               plantZones={plantZones} setPlantZones={setPlantZones}
               soilStats={soilStats} setSoilStats={setSoilStats}
               alerts={alerts}
-              onLogout={() => auth.signOut().then(() => navigate('login'))} 
+              onLogout={handleLogout} 
               setCurrentScreen={setCurrentScreen}
             />
           )}
@@ -129,18 +200,26 @@
       );
     }
 
+    // --- Screens ---
+
     const SplashScreen = ({ onFinish }) => {
       useEffect(() => { const timer = setTimeout(onFinish, 2500); return () => clearTimeout(timer); }, [onFinish]);
       return (
-        <div className="flex flex-col items-center justify-center min-h-screen bg-earth-beige animate-in fade-in duration-1000">
-          <img src={APP_LOGO} className="w-32 h-32 object-contain mb-4 drop-shadow-xl animate-bounce" />
-          <h1 className="text-4xl font-black text-[#4A5D23] tracking-tighter">Farm OS</h1>
-          <p className="text-[#8B5A2B] font-bold text-xs uppercase tracking-[0.4em]">Smart Ecosystem</p>
+        <div className="flex flex-col items-center justify-center min-h-screen bg-white relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 to-white z-0"></div>
+          <div className="z-10 flex flex-col items-center animate-in fade-in zoom-in duration-1000">
+            <div className="relative mb-6">
+              <div className="absolute inset-0 bg-emerald-400 blur-3xl opacity-20 animate-pulse"></div>
+              <img src={APP_LOGO} className="w-40 h-40 object-contain drop-shadow-2xl relative z-10 hover:scale-105 transition-transform" />
+            </div>
+            <h1 className="text-5xl font-extrabold gradient-text tracking-tight mb-2">Farm OS</h1>
+            <p className="text-emerald-600/70 font-semibold text-sm uppercase tracking-[0.4em]">Smart Ecosystem</p>
+          </div>
         </div>
       );
     };
 
-    const LoginScreen = ({ onNext, setUserData, userData }) => {
+    const LoginScreen = ({ onNext, onGuest, setUserData, userData }) => {
       const [isLoading, setIsLoading] = useState(false);
       const [errorMsg, setErrorMsg] = useState('');
 
@@ -149,294 +228,676 @@
         const provider = new firebase.auth.GoogleAuthProvider();
         auth.signInWithPopup(provider)
           .then((result) => {
-            setUserData({ ...userData, name: result.user.displayName, email: result.user.email, avatar: result.user.photoURL });
+            setUserData({ ...userData, name: result.user.displayName, email: result.user.email, avatar: result.user.photoURL, role: 'เจ้าของฟาร์ม' });
             setIsLoading(false); onNext();
           })
           .catch((error) => {
             setIsLoading(false);
-            if (error.code === 'auth/unauthorized-domain') {
-              setErrorMsg("โดเมนยังไม่ได้รับอนุญาตใน Firebase \nกรุณาเพิ่ม benya-pha.github.io ใน Authorized Domains");
-            } else if (error.code === 'auth/operation-not-supported-in-this-environment') {
-              setErrorMsg("Preview Mode ไม่รองรับ Google Login \nระบบจะจำลองข้อมูลให้ชั่วคราว...");
-              setTimeout(() => { setUserData({...userData, name: 'คุณสมชาย (จำลอง)'}); onNext(); }, 2000);
+            if (error.code === 'auth/unauthorized-domain' || error.code === 'auth/operation-not-supported-in-this-environment') {
+              setErrorMsg("โหมด Preview กำลังจำลองบัญชีผู้ใช้ให้ชั่วคราว...");
+              setTimeout(() => { setUserData({...userData, name: 'ผู้ดูแลฟาร์ม (Demo)', role: 'เจ้าของฟาร์ม'}); onNext(); }, 2000);
             } else { setErrorMsg(error.message); }
           });
       };
 
       return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-earth-beige">
-          <div className="w-full max-w-sm bg-white p-10 rounded-[3rem] shadow-2xl border border-gray-100 text-center animate-in zoom-in duration-500">
-            <img src={APP_LOGO} className="w-20 h-20 mx-auto mb-8" />
-            <h2 className="text-3xl font-black text-[#4A5D23] mb-2 tracking-tight tracking-tight">เข้าสู่ระบบ</h2>
-            <p className="text-gray-400 mb-10 font-bold">Smart Farming Ecosystem</p>
-            <div className="space-y-4">
-              <button onClick={handleGoogleLogin} className="w-full bg-white border-2 border-gray-100 text-gray-700 py-4 rounded-[1.5rem] font-black hover:bg-gray-50 flex items-center justify-center gap-3 transition-all">🌐 ล็อกอินด้วย Google</button>
-              <button onClick={onNext} className="w-full bg-[#4A5D23] text-white py-4 rounded-[1.5rem] font-black hover:bg-[#3a4a1c] shadow-xl transition-all">📱 เบอร์โทรศัพท์ / อีเมล</button>
+        <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-gray-50 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] relative">
+          <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-emerald-400 rounded-full mix-blend-multiply filter blur-[128px] opacity-40 animate-blob"></div>
+          <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-[128px] opacity-40 animate-blob animation-delay-2000"></div>
+          
+          <div className="w-full max-w-md bg-white/80 backdrop-blur-xl p-10 md:p-12 rounded-[2.5rem] card-shadow border border-white relative z-10 modal-enter">
+            <div className="text-center mb-10">
+              <img src={APP_LOGO} className="w-20 h-20 mx-auto mb-6 drop-shadow-md" />
+              <h2 className="text-3xl font-bold text-gray-800 tracking-tight">เข้าสู่ระบบ</h2>
+              <p className="text-gray-500 mt-2 text-sm">Farm Management Platform</p>
             </div>
-            {errorMsg && <p className="mt-6 text-red-600 text-[10px] whitespace-pre-line font-bold leading-relaxed">{errorMsg}</p>}
+            
+            <div className="space-y-4">
+              <button onClick={handleGoogleLogin} disabled={isLoading} className="w-full bg-white border border-gray-200 text-gray-700 py-4 rounded-2xl font-semibold hover:bg-gray-50 focus:ring-4 focus:ring-gray-100 flex items-center justify-center gap-3 transition-all active:scale-[0.98] shadow-sm">
+                <svg className="w-5 h-5" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/><path fill="none" d="M1 1h22v22H1z"/></svg>
+                {isLoading ? 'กำลังเชื่อมต่อ...' : 'เข้าสู่ระบบด้วย Google'}
+              </button>
+              
+              <button onClick={onNext} className="w-full bg-gray-900 text-white py-4 rounded-2xl font-semibold hover:bg-gray-800 shadow-md transition-all active:scale-[0.98]">
+                ใช้งานด้วยอีเมล / เบอร์โทร
+              </button>
+
+              <div className="relative flex items-center py-2">
+                <div className="flex-grow border-t border-gray-200"></div>
+                <span className="flex-shrink-0 mx-4 text-gray-400 text-xs uppercase tracking-widest">ทางเลือก</span>
+                <div className="flex-grow border-t border-gray-200"></div>
+              </div>
+
+              {/* Guest Login Button */}
+              <button onClick={onGuest} className="w-full bg-white border-2 border-dashed border-gray-300 text-gray-500 py-3.5 rounded-2xl font-semibold hover:border-emerald-400 hover:text-emerald-600 transition-all flex items-center justify-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                เข้าสู่ระบบแบบผู้เยี่ยมชม
+              </button>
+            </div>
+            {errorMsg && <div className="mt-6 p-4 bg-red-50 rounded-xl text-red-600 text-sm text-center font-medium animate-pulse">{errorMsg}</div>}
           </div>
         </div>
       );
     };
 
     const RegisterScreen = ({ userData, setUserData, onNext }) => {
+      // ... (RegisterScreen remains unchanged)
       const fileRef = useRef();
       const handleImg = (e) => {
-          const r = new FileReader(); r.onload = (ev) => setUserData({...userData, avatar: ev.target.result}); r.readAsDataURL(e.target.files[0]);
+        const r = new FileReader(); r.onload = (ev) => setUserData({...userData, avatar: ev.target.result}); r.readAsDataURL(e.target.files[0]);
       };
       return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-earth-beige">
-          <div className="w-full max-w-sm bg-white p-10 rounded-[3rem] shadow-2xl border border-gray-100 text-center">
-            <h2 className="text-2xl font-black text-[#4A5D23] mb-8">ข้อมูลโปรไฟล์</h2>
-            <div className="relative w-28 h-28 mx-auto mb-6 group">
-              <img src={userData.avatar} className="w-full h-full rounded-full border-4 border-[#4A5D23] shadow-xl object-cover" />
-              <button onClick={() => fileRef.current.click()} className="absolute bottom-0 right-0 bg-white p-2 rounded-full shadow-lg border border-gray-100 transition-transform active:scale-90">📷</button>
+        <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-50">
+          <div className="w-full max-w-md bg-white p-10 md:p-12 rounded-[2.5rem] card-shadow border border-gray-100 modal-enter">
+            <h2 className="text-3xl font-bold text-gray-800 mb-2 text-center">สร้างโปรไฟล์</h2>
+            <p className="text-gray-500 mb-8 text-center text-sm">ตั้งค่าข้อมูลฟาร์มของคุณเพื่อเริ่มต้น</p>
+            <div className="relative w-32 h-32 mx-auto mb-8 group cursor-pointer" onClick={() => fileRef.current.click()}>
+              <div className="absolute inset-0 rounded-full border-4 border-emerald-100 group-hover:border-emerald-300 transition-colors"></div>
+              <img src={userData.avatar} className="w-full h-full rounded-full object-cover p-1" />
+              <div className="absolute bottom-1 right-1 bg-emerald-500 text-white p-2 rounded-full shadow-lg hover:scale-110 transition-transform"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></div>
               <input type="file" ref={fileRef} className="hidden" accept="image/*" onChange={handleImg} />
             </div>
-            <button onClick={() => setUserData({...userData, avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${Math.random()}`})} className="text-xs text-blue-500 font-bold mb-8 block underline decoration-blue-200 underline-offset-4">🎲 สุ่มรูปใหม่</button>
-            <div className="space-y-4 text-left">
-              <div><label className="text-[10px] font-bold text-gray-400 ml-3 uppercase">ชื่อเล่น</label><input type="text" className="w-full border p-3 rounded-xl outline-none focus:ring-2 focus:ring-green-100" value={userData.name} onChange={e => setUserData({...userData, name: e.target.value})} /></div>
-              <div><label className="text-[10px] font-bold text-gray-400 ml-3 uppercase">ชื่อฟาร์ม</label><input type="text" className="w-full border p-3 rounded-xl outline-none focus:ring-2 focus:ring-green-100" value={userData.farmName} onChange={e => setUserData({...userData, farmName: e.target.value})} /></div>
+            <div className="space-y-5">
+              <div><label className="text-xs font-semibold text-gray-500 ml-1 mb-1 block">ชื่อผู้ดูแล</label><input type="text" className="w-full border border-gray-200 bg-gray-50 p-4 rounded-2xl text-gray-800 placeholder-gray-400 transition-all" value={userData.name} onChange={e => setUserData({...userData, name: e.target.value})} /></div>
+              <div><label className="text-xs font-semibold text-gray-500 ml-1 mb-1 block">ชื่อฟาร์ม</label><input type="text" className="w-full border border-gray-200 bg-gray-50 p-4 rounded-2xl text-gray-800 placeholder-gray-400 transition-all" value={userData.farmName} onChange={e => setUserData({...userData, farmName: e.target.value})} /></div>
             </div>
-            <button onClick={onNext} className="w-full mt-10 bg-[#4A5D23] text-white py-4 rounded-2xl font-black text-xl shadow-xl transition-all active:scale-95">เริ่มต้นใช้งาน →</button>
+            <button onClick={onNext} className="w-full mt-10 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-4 rounded-2xl font-bold text-lg shadow-lg shadow-emerald-500/30 hover:-translate-y-0.5 transition-all">ถัดไป</button>
           </div>
         </div>
       );
     };
 
     const RobotSetup = ({ robots, setRobots, onNext }) => {
-      const [editingBot, setEditingBot] = useState(null);
-      const [isManage, setIsManage] = useState(false);
-      const botFileRef = useRef();
-
-      return (
-        <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-earth-beige">
+       // ... (RobotSetup remains unchanged)
+       const [editingBot, setEditingBot] = useState(null);
+       const [isManage, setIsManage] = useState(false);
+       const botFileRef = useRef();
+       return (
+        <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-gray-50">
           {editingBot ? (
-            <div className="bg-white p-10 rounded-[3rem] shadow-2xl w-full max-w-sm modal-enter text-center">
-              <h2 className="text-xl font-bold mb-8">ตั้งค่าหุ่นยนต์</h2>
-              <div className="relative w-24 h-24 mx-auto mb-6">
-                 <img src={editingBot.image} className="w-full h-full rounded-[1.5rem] object-cover shadow-inner border" />
-                 <button onClick={() => botFileRef.current.click()} className="absolute -bottom-2 -right-2 bg-white p-2 rounded-full shadow border">📷</button>
-                 <input type="file" ref={botFileRef} className="hidden" accept="image/*" onChange={(e)=>{
-                   const r = new FileReader(); r.onload=(ev)=>setEditingBot({...editingBot, image: ev.target.result}); r.readAsDataURL(e.target.files[0]);
-                 }} />
+            <div className="bg-white p-8 md:p-10 rounded-[2.5rem] card-shadow border border-gray-100 w-full max-w-sm modal-enter">
+              <h2 className="text-2xl font-bold text-gray-800 mb-8 text-center">ตั้งค่าหุ่นยนต์</h2>
+              <div className="relative w-28 h-28 mx-auto mb-8 cursor-pointer group" onClick={() => botFileRef.current.click()}>
+                 <div className="absolute inset-0 bg-gray-100 rounded-2xl group-hover:bg-gray-200 transition-colors"></div>
+                 <img src={editingBot.image} className="w-full h-full rounded-2xl object-cover p-2 relative z-10" />
+                 <div className="absolute -bottom-3 -right-3 bg-emerald-500 text-white p-2 rounded-xl shadow-lg z-20 hover:scale-110 transition-transform"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></div>
+                 <input type="file" ref={botFileRef} className="hidden" accept="image/*" onChange={(e)=>{ const r = new FileReader(); r.onload=(ev)=>setEditingBot({...editingBot, image: ev.target.result}); r.readAsDataURL(e.target.files[0]); }} />
               </div>
-              <input type="text" placeholder="ชื่อหุ่นยนต์" className="w-full border p-3 rounded-xl mb-4 outline-none" value={editingBot.name} onChange={e=>setEditingBot({...editingBot, name: e.target.value})} />
-              <input type="text" placeholder="IP Address" className="w-full border p-3 rounded-xl mb-8 outline-none" value={editingBot.ip} onChange={e=>setEditingBot({...editingBot, ip: e.target.value})} />
-              <div className="flex gap-2">
-                <button onClick={() => setEditingBot(null)} className="flex-1 bg-gray-50 py-3 rounded-xl font-bold text-gray-400">ยกเลิก</button>
-                <button onClick={() => { if(robots.find(r=>r.id===editingBot.id)) { setRobots(robots.map(r=>r.id===editingBot.id?editingBot:r)); } else { setRobots([...robots, editingBot]); } setEditingBot(null); }} className="flex-1 bg-[#4A5D23] text-white py-3 rounded-xl font-bold shadow-lg">บันทึก</button>
+              <div className="space-y-4 mb-8">
+                <div><label className="text-xs font-semibold text-gray-500 ml-1 mb-1 block">ชื่อหุ่นยนต์</label><input type="text" className="w-full border border-gray-200 bg-gray-50 p-4 rounded-2xl" value={editingBot.name} onChange={e=>setEditingBot({...editingBot, name: e.target.value})} /></div>
+              </div>
+              <div className="flex gap-3">
+                <button onClick={() => setEditingBot(null)} className="flex-1 bg-white border border-gray-200 py-3.5 rounded-xl font-semibold text-gray-600">ยกเลิก</button>
+                <button onClick={() => { if(robots.find(r=>r.id===editingBot.id)) { setRobots(robots.map(r=>r.id===editingBot.id?editingBot:r)); } else { setRobots([...robots, editingBot]); } setEditingBot(null); }} className="flex-1 bg-emerald-500 text-white py-3.5 rounded-xl font-semibold shadow-lg shadow-emerald-500/30">บันทึก</button>
               </div>
             </div>
           ) : (
             <div className="w-full max-w-4xl flex flex-col items-center">
-              <h1 className="text-3xl font-black text-[#4A5D23] mb-2 tracking-tight text-center">เลือกหุ่นยนต์</h1>
-              <p className="text-gray-400 text-xs font-bold mb-10 text-center uppercase tracking-widest">Select robot to manage</p>
-              <div className="flex flex-wrap justify-center gap-6">
+              <h1 className="text-3xl md:text-4xl font-extrabold text-gray-800 mb-2 text-center tracking-tight">Fleet Management</h1>
+              <p className="text-gray-500 text-sm mb-12 text-center">จัดการหุ่นยนต์ในฟาร์มของคุณ</p>
+              <div className="flex flex-wrap justify-center gap-6 md:gap-8">
                 {robots.map(r => (
-                  <div key={r.id} className="relative group">
-                    {isManage && <button onClick={() => setRobots(robots.filter(b => b.id !== r.id))} className="absolute -top-2 -right-2 bg-red-500 text-white w-7 h-7 rounded-full z-10 font-bold shadow-lg border-2 border-white flex items-center justify-center">✕</button>}
-                    <div onClick={() => isManage && setEditingBot(r)} className={`w-32 h-32 rounded-[2.5rem] bg-white shadow-xl flex items-center justify-center overflow-hidden border-4 ${isManage ? 'border-blue-200 scale-105' : 'border-white'} transition-all`}><img src={r.image} className="w-full h-full object-cover" /></div>
-                    <p className="text-center mt-3 font-bold text-gray-600">{r.name}</p>
+                  <div key={r.id} className="relative text-center group">
+                    {isManage && <button onClick={() => setRobots(robots.filter(b => b.id !== r.id))} className="absolute -top-3 -right-3 bg-red-500 text-white w-8 h-8 rounded-full z-10 font-bold shadow-lg flex items-center justify-center">✕</button>}
+                    <div onClick={() => isManage && setEditingBot(r)} className={`w-32 h-32 md:w-40 md:h-40 rounded-[2rem] bg-white card-shadow flex items-center justify-center overflow-hidden border-2 ${isManage ? 'border-blue-400 cursor-pointer scale-105' : 'border-transparent'} transition-all duration-300 relative`}><img src={r.image} className="w-[80%] h-[80%] object-contain relative z-10 group-hover:scale-110 transition-transform duration-500" /></div>
+                    <p className="mt-4 font-semibold text-sm text-gray-700">{r.name}</p>
                   </div>
                 ))}
-                <div onClick={() => setEditingBot({id:Date.now(), name:'New Bot', ip:'', image:'https://api.dicebear.com/7.x/bottts/svg?seed='+Date.now()})} className="w-32 h-32 rounded-[2.5rem] border-4 border-dashed border-gray-300 flex items-center justify-center text-3xl text-gray-300 cursor-pointer hover:border-[#4A5D23] hover:text-[#4A5D23] transition-all">➕</div>
+                <div onClick={() => setEditingBot({id:Date.now(), name:'New Bot', ip:'', image:'https://api.dicebear.com/7.x/bottts/svg?seed='+Date.now()+'&backgroundColor=f3f4f6'})} className="w-32 h-32 md:w-40 md:h-40 rounded-[2rem] border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 cursor-pointer hover:border-emerald-500 hover:text-emerald-500 hover:bg-emerald-50/50 flex-col gap-2">
+                  <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg><span className="text-xs font-semibold">เพิ่มหุ่นยนต์</span>
+                </div>
               </div>
-              <div className="mt-16 flex flex-col gap-4 w-full max-w-xs">
-                 <button onClick={onNext} className="w-full bg-[#4A5D23] text-white py-4 rounded-full font-black text-xl shadow-2xl hover:scale-105 transition-all">ไปที่แดชบอร์ด →</button>
-                 <button onClick={() => setIsManage(!isManage)} className="text-blue-600 font-bold text-sm underline">{isManage ? 'เสร็จสิ้นการตั้งค่า' : 'จัดการหุ่นยนต์'}</button>
+              <div className="mt-16 w-full max-w-sm px-6">
+                 <button onClick={onNext} className="w-full bg-gradient-to-r from-gray-900 to-gray-800 text-white py-4.5 rounded-2xl font-bold text-lg shadow-xl shadow-gray-900/20 hover:-translate-y-1 transition-all flex items-center justify-center gap-2">เข้าสู่ Dashboard <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></button>
+                 <button onClick={() => setIsManage(!isManage)} className="mt-6 w-full text-center text-gray-500 font-medium text-sm">{isManage ? 'เสร็จสิ้นการจัดการ' : '⚙️ จัดการหุ่นยนต์'}</button>
               </div>
             </div>
           )}
         </div>
-      );
+       );
     };
 
-    // --- Components: SVG Area Chart (Unigrade Style) ---
-    const AreaChart = ({ data, color, labels }) => {
-      const maxVal = 100;
-      const stepX = 100 / (data.length - 1);
-      const points = data.map((d, i) => `${i * stepX},${100 - (d / maxVal) * 100}`).join(' ');
-      const fillPoints = `0,100 ${points} 100,100`;
+    // --- UPGRADED: High Quality SVG Area Chart (Smooth Curves & Dropshadow) ---
+    const AreaChart = ({ dataSets, labels, height = "h-72", maxValue = 100, isWhite = false }) => {
+      const stepX = 100 / (labels.length - 1);
+      
+      // Function to generate smooth bezier curves (Catmull-Rom to Bezier)
+      const getSmoothPath = (points) => {
+        if (points.length === 0) return '';
+        let d = `M ${points[0].x},${points[0].y}`;
+        for (let i = 0; i < points.length - 1; i++) {
+          const p0 = i === 0 ? points[0] : points[i - 1];
+          const p1 = points[i];
+          const p2 = points[i + 1];
+          const p3 = i + 2 < points.length ? points[i + 2] : p2;
+          // Calculate control points
+          const cp1x = p1.x + (p2.x - p0.x) / 6;
+          const cp1y = p1.y + (p2.y - p0.y) / 6;
+          const cp2x = p2.x - (p3.x - p1.x) / 6;
+          const cp2y = p2.y - (p3.y - p1.y) / 6;
+          
+          d += ` C ${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`;
+        }
+        return d;
+      };
 
       return (
-        <div className="w-full h-full flex flex-col">
-          <div className="flex-1 relative mt-4">
-             <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible" preserveAspectRatio="none">
-               {/* Grid Lines */}
-               {[0, 25, 50, 75, 100].map(v => <line key={v} x1="0" y1={v} x2="100" y2={v} stroke="#f3f4f6" strokeWidth="0.5" />)}
-               {/* Area Fill */}
-               <polygon points={fillPoints} fill={color} fillOpacity="0.15" className="area-chart-path" />
-               {/* Main Line */}
-               <polyline points={points} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="area-chart-path" />
-               {/* Points */}
-               {data.map((d, i) => <circle key={i} cx={i * stepX} cy={100 - (d / maxVal) * 100} r="2.5" fill="white" stroke={color} strokeWidth="1.5" />)}
-             </svg>
+        <div className={`w-full ${height} flex items-stretch gap-3`}>
+          <div className="flex flex-col justify-between text-[10px] font-medium text-gray-400 py-2 text-right w-8">
+             <span className={isWhite?'text-white/60':''}>{maxValue}</span>
+             <span className={isWhite?'text-white/60':''}>{Math.round(maxValue*0.75)}</span>
+             <span className={isWhite?'text-white/60':''}>{Math.round(maxValue*0.5)}</span>
+             <span className={isWhite?'text-white/60':''}>{Math.round(maxValue*0.25)}</span>
+             <span className={isWhite?'text-white/60':''}>0</span>
           </div>
-          <div className="flex justify-between mt-4">
-             {labels.map(l => <span key={l} className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{l}</span>)}
+          <div className="flex-1 flex flex-col relative overflow-hidden">
+            <div className="flex-1 relative">
+               <svg viewBox="0 0 100 100" className="w-full h-full overflow-visible" preserveAspectRatio="none">
+                 <defs>
+                   {dataSets.map((ds, idx) => (
+                     <linearGradient key={`grad-${idx}`} id={`gradient-${idx}`} x1="0" x2="0" y1="0" y2="1">
+                       <stop offset="0%" stopColor={ds.color} stopOpacity={ds.fillOpacity || "0.4"} />
+                       <stop offset="100%" stopColor={ds.color} stopOpacity="0.01" />
+                     </linearGradient>
+                   ))}
+                   {/* Glow / Shadow effect for lines */}
+                   <filter id="glowShadow" x="-20%" y="-20%" width="140%" height="140%">
+                      <feDropShadow dx="0" dy="4" stdDeviation="3" floodColor="#000" floodOpacity="0.15" />
+                   </filter>
+                 </defs>
+                 
+                 {/* Horizontal Grid Lines */}
+                 {[0, 25, 50, 75, 100].map(v => <line key={v} x1="0" y1={v} x2="100" y2={v} stroke={isWhite?"rgba(255,255,255,0.1)":"#f3f4f6"} strokeWidth="0.5" strokeDasharray="2,2" />)}
+                 
+                 {dataSets.map((ds, idx) => {
+                    const pointsArr = ds.data.map((d, i) => ({ x: i * stepX, y: 100 - (Math.min(maxValue, Math.max(0, d)) / maxValue) * 100 }));
+                    
+                    const smoothCurveD = getSmoothPath(pointsArr);
+                    // Create fill path by connecting ends to bottom
+                    const fillPathD = `${smoothCurveD} L 100,100 L 0,100 Z`;
+                    
+                    return (
+                      <g key={idx}>
+                         {/* Gradient Area Fill */}
+                         <path d={fillPathD} fill={`url(#gradient-${idx})`} className="area-chart-path" stroke="none" />
+                         
+                         {/* Smooth Line Curve */}
+                         <path d={smoothCurveD} fill="none" stroke={ds.color} strokeWidth={ds.strokeWidth || "2.5"} strokeLinecap="round" strokeLinejoin="round" className="area-chart-path" filter="url(#glowShadow)" />
+                         
+                         {/* Data Point Circles */}
+                         {pointsArr.map((p, i) => (
+                           <g key={i}>
+                             <circle cx={p.x} cy={p.y} r="2.5" fill={isWhite?"var(--primary)":"white"} stroke={isWhite?"white":ds.color} strokeWidth="2" className="transition-all duration-500 hover:r-[4px] cursor-pointer" />
+                           </g>
+                         ))}
+                      </g>
+                    );
+                 })}
+               </svg>
+            </div>
+            <div className="flex justify-between mt-4 px-1">
+               {labels.map(l => <span key={l} className={`text-[10px] font-medium ${isWhite?'text-white/70':'text-gray-400'}`}>{l}</span>)}
+            </div>
           </div>
         </div>
       );
     };
 
-    const FarmOS = ({ userData, setUserData, robots, setRobots, plantZones, soilStats, setSoilStats, alerts, onLogout, setCurrentScreen }) => {
+    // --- Main Dashboard (FarmOS) ---
+    const FarmOS = ({ userData, setUserData, robots, setRobots, plantZones, setPlantZones, soilStats, setSoilStats, alerts, onLogout, setCurrentScreen }) => {
       const [activeTab, setActiveTab] = useState('dashboard');
       const [alertFilter, setAlertFilter] = useState('all');
       const [showProfileEditor, setShowProfileEditor] = useState(false);
-      const [showMobileMenu, setShowMobileMenu] = useState(false);
+      
       const profFileRef = useRef();
+
+      const isGuest = userData.role === 'guest'; // Check if current user is guest
+
+      const menuItems = [
+        { id: 'dashboard', label: 'ภาพรวม', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg> },
+        { id: 'plant', label: 'สุขภาพพืช', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg> },
+        { id: 'soil', label: 'วิเคราะห์ดิน', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg> },
+        { id: 'resource', label: 'ควบคุมระบบ', icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg> },
+      ];
 
       const filteredAlerts = alertFilter === 'all' ? alerts : alerts.filter(a => a.type === alertFilter);
 
-      const MobileMenu = () => (
-        <div className="fixed inset-0 bg-black/60 z-[500] flex items-end backdrop-blur-sm">
-           <div className="w-full bg-white rounded-t-[3rem] p-8 pb-14 modal-enter shadow-2xl">
-              <div className="flex justify-between items-center mb-8"><h3 className="text-2xl font-black text-[#4A5D23]">เมนูจัดการ</h3><button onClick={()=>setShowMobileMenu(false)} className="text-3xl text-gray-200">✕</button></div>
-              <div className="grid grid-cols-2 gap-4">
-                 <button onClick={()=>{setActiveTab('robot_list'); setShowMobileMenu(false);}} className="p-6 bg-gray-50 rounded-[2rem] flex flex-col items-center gap-2 border">🤖 <span className="font-bold">หุ่นยนต์</span></button>
-                 <button onClick={()=>{setActiveTab('reports'); setShowMobileMenu(false);}} className="p-6 bg-gray-50 rounded-[2rem] flex flex-col items-center gap-2 border">📈 <span className="font-bold">สถิติ</span></button>
-                 <button onClick={()=>{setShowProfileEditor(true); setShowMobileMenu(false);}} className="col-span-2 p-6 bg-blue-50 rounded-[2rem] flex flex-col items-center gap-2 border border-blue-100 text-blue-700 font-bold underline">แก้ไขโปรไฟล์</button>
-              </div>
-              <button onClick={onLogout} className="w-full mt-6 py-4 bg-red-50 text-red-500 rounded-2xl font-black">ออกจากระบบ</button>
-           </div>
-        </div>
-      );
-
       return (
-        <div className="flex flex-col md:flex-row h-screen relative bg-earth-beige">
-          {showMobileMenu && <MobileMenu />}
+        <div className="flex h-screen w-full bg-[#f8fafc] overflow-hidden">
           
-          {showProfileEditor && (
-            <div className="fixed inset-0 bg-black/50 z-[600] flex items-center justify-center p-4 backdrop-blur-sm">
-               <div className="bg-white p-8 rounded-[2.5rem] w-full max-w-sm modal-enter text-center">
-                  <h3 className="text-xl font-black mb-8">แก้ไขโปรไฟล์</h3>
-                  <div className="relative w-24 h-24 mx-auto mb-6">
-                    <img src={userData.avatar} className="w-full h-full rounded-full border-4 border-[#4A5D23] object-cover shadow-xl" />
-                    <button onClick={()=>profFileRef.current.click()} className="absolute bottom-0 right-0 bg-white p-2 rounded-full shadow border transition-transform active:scale-90">📷</button>
+          {/* Profile Editor Modal */}
+          {showProfileEditor && !isGuest && (
+            <div className="fixed inset-0 bg-gray-900/40 z-[600] flex items-center justify-center p-4 backdrop-blur-sm">
+               <div className="bg-white p-8 rounded-[2rem] w-full max-w-sm modal-enter card-shadow border border-gray-100">
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-xl font-bold text-gray-800">โปรไฟล์</h3>
+                    <button onClick={() => setShowProfileEditor(false)} className="text-gray-400 hover:text-gray-600"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                  </div>
+                  <div className="relative w-24 h-24 mx-auto mb-8 group cursor-pointer" onClick={()=>profFileRef.current.click()}>
+                    <div className="absolute inset-0 rounded-full border-2 border-emerald-100 group-hover:border-emerald-300 transition-colors"></div>
+                    <img src={userData.avatar} className="w-full h-full rounded-full object-cover p-1" />
+                    <div className="absolute bottom-0 right-0 bg-white border border-gray-200 p-1.5 rounded-full shadow-sm text-gray-600">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path></svg>
+                    </div>
                     <input type="file" ref={profFileRef} className="hidden" accept="image/*" onChange={(e)=>{
                       const r = new FileReader(); r.onload = (ev) => setUserData({...userData, avatar: ev.target.result}); r.readAsDataURL(e.target.files[0]);
                     }} />
                   </div>
-                  <input type="text" className="w-full border p-3 rounded-xl mb-4" value={userData.name} onChange={e=>setUserData({...userData, name: e.target.value})} placeholder="ชื่อ" />
-                  <input type="text" className="w-full border p-3 rounded-xl mb-6" value={userData.farmName} onChange={e=>setUserData({...userData, farmName: e.target.value})} placeholder="ฟาร์ม" />
-                  <button onClick={() => setShowProfileEditor(false)} className="w-full bg-[#4A5D23] text-white py-3 rounded-2xl font-bold shadow-lg transition-transform active:scale-95">บันทึก</button>
-                  <button onClick={() => setShowProfileEditor(false)} className="mt-4 text-gray-400 font-bold block w-full text-center">ปิด</button>
+                  <div className="space-y-4 mb-6">
+                    <div>
+                      <label className="text-xs font-semibold text-gray-500 ml-1 mb-1 block">ชื่อ</label>
+                      <input type="text" className="w-full border border-gray-200 bg-gray-50 p-3.5 rounded-xl" value={userData.name} onChange={e=>setUserData({...userData, name: e.target.value})} />
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-gray-500 ml-1 mb-1 block">ชื่อฟาร์ม</label>
+                      <input type="text" className="w-full border border-gray-200 bg-gray-50 p-3.5 rounded-xl" value={userData.farmName} onChange={e=>setUserData({...userData, farmName: e.target.value})} />
+                    </div>
+                  </div>
+                  <button onClick={() => setShowProfileEditor(false)} className="w-full bg-emerald-500 text-white py-3.5 rounded-xl font-semibold shadow-md hover:bg-emerald-600 transition-colors mb-3">บันทึกข้อมูล</button>
+                  <button onClick={() => {setShowProfileEditor(false); onLogout();}} className="w-full bg-red-50 text-red-600 py-3.5 rounded-xl font-semibold hover:bg-red-100 transition-colors">ออกจากระบบ</button>
                </div>
             </div>
           )}
 
-          {/* Sidebar Desktop */}
-          <aside className="hidden md:flex flex-col w-64 bg-earth-sidebar h-full border-r border-[#D9D1BE] p-6 shadow-sm">
-            <div className="flex items-center gap-3 mb-10">
-              <img src={APP_LOGO} className="w-10 h-10 object-contain" />
-              <h1 className="text-xl font-black text-[#4A5D23] truncate">{userData.farmName || 'Farm OS'}</h1>
-            </div>
-            <div className="flex-1 space-y-1.5 overflow-y-auto hide-scrollbar">
-              {[ {id:'dashboard',l:'ภาพรวม',i:'📊'}, {id:'plant',l:'สุขภาพพืช',i:'🌿'}, {id:'soil',l:'วิเคราะห์ดิน',i:'🧪'}, {id:'resource',l:'ควบคุมระบบ',i:'💧'} ].map(item => (
-                <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl font-bold text-left transition-all ${activeTab === item.id ? 'bg-[#4A5D23] text-white shadow-xl scale-105' : 'text-[#5C564B] hover:bg-white/40'}`}>
-                   <span className="text-xl">{item.i}</span> {item.l}
-                </button>
-              ))}
-              <button onClick={() => setActiveTab('robot_list')} className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl font-bold transition-all ${activeTab === 'robot_list' ? 'bg-[#4A5D23] text-white shadow-xl' : 'text-[#5C564B] hover:bg-white/40'}`}><span>🤖</span> หุ่นยนต์</button>
-              <button onClick={() => setActiveTab('reports')} className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl font-bold transition-all ${activeTab === 'reports' ? 'bg-[#4A5D23] text-white shadow-xl' : 'text-[#5C564B] hover:bg-white/40'}`}><span>📈</span> สถิติ</button>
-              <button onClick={() => setActiveTab('alerts')} className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl font-bold transition-all ${activeTab === 'alerts' ? 'bg-[#4A5D23] text-white shadow-xl' : 'text-[#5C564B] hover:bg-white/40'}`}><span>🔔</span> แจ้งเตือน</button>
-            </div>
-            <div className="mt-4 pt-6 border-t border-[#D9D1BE]">
-                <div onClick={()=>setShowProfileEditor(true)} className="flex items-center gap-3 p-3 bg-white/40 rounded-2xl mb-4 cursor-pointer hover:bg-white transition-all group">
-                   <img src={userData.avatar} className="w-10 h-10 rounded-full border-2 border-white object-cover shadow-md group-hover:scale-110 transition-all" />
-                   <div className="overflow-hidden"><p className="text-sm font-black truncate">{userData.name}</p><p className="text-[10px] text-[#8B5A2B] font-black uppercase tracking-widest">Admin Profile</p></div>
+          {/* Sidebar Desktop (Floating Island style) */}
+          <aside className="hidden lg:flex flex-col w-72 h-full p-6 relative">
+            
+            <div className="bg-white rounded-[2rem] card-shadow border border-gray-100 h-full flex flex-col overflow-hidden relative">
+              {/* GUEST BANNER */}
+              {isGuest && (
+                 <div className="bg-gray-800 text-white text-[10px] font-bold tracking-widest uppercase py-1 text-center w-full relative z-20">
+                    👁️ Guest View Only
+                 </div>
+              )}
+
+              <div className="p-6 flex items-center gap-3 border-b border-gray-50">
+                <img src={APP_LOGO} className="w-10 h-10 object-contain drop-shadow-sm" />
+                <div className="overflow-hidden">
+                  <h1 className="text-lg font-bold text-gray-800 truncate">{userData.farmName || 'Farm OS'}</h1>
+                  <p className="text-xs text-emerald-600 font-semibold uppercase tracking-wider">Smart Farm</p>
                 </div>
+              </div>
+              
+              <div className="flex-1 overflow-y-auto hide-scrollbar p-4 space-y-2">
+                <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-4 pt-2 mb-2">Main Menu</div>
+                {menuItems.map(item => (
+                  <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl font-semibold transition-all duration-300 ${activeTab === item.id ? 'bg-emerald-50 text-emerald-600' : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'}`}>
+                     <span className={`${activeTab === item.id ? 'text-emerald-500' : 'text-gray-400'}`}>{item.icon}</span> 
+                     {item.label}
+                  </button>
+                ))}
+                
+                <div className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-4 pt-6 mb-2">System</div>
+                <button onClick={() => setActiveTab('robot_list')} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl font-semibold transition-all ${activeTab === 'robot_list' ? 'bg-emerald-50 text-emerald-600' : 'text-gray-500 hover:bg-gray-50'}`}>
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg> 
+                  หุ่นยนต์
+                </button>
+                <button onClick={() => setActiveTab('reports')} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl font-semibold transition-all ${activeTab === 'reports' ? 'bg-emerald-50 text-emerald-600' : 'text-gray-500 hover:bg-gray-50'}`}>
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path></svg> 
+                  สถิติ
+                </button>
+                <button onClick={() => setActiveTab('alerts')} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl font-semibold transition-all ${activeTab === 'alerts' ? 'bg-emerald-50 text-emerald-600' : 'text-gray-500 hover:bg-gray-50'}`}>
+                  <div className="relative">
+                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
+                    {alerts.length > 0 && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>}
+                  </div>
+                  การแจ้งเตือน
+                </button>
+              </div>
+
+              <div className="p-4 border-t border-gray-50 bg-gray-50/50">
+                 {isGuest ? (
+                    <button onClick={onLogout} className="w-full flex items-center justify-center gap-2 p-3 bg-white border border-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all shadow-sm">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                      ย้อนกลับไปเข้าสู่ระบบ
+                    </button>
+                 ) : (
+                    <div onClick={()=>setShowProfileEditor(true)} className="flex items-center gap-3 p-2 rounded-xl cursor-pointer hover:bg-white hover:shadow-sm transition-all group">
+                        <img src={userData.avatar} className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm" />
+                        <div className="overflow-hidden flex-1">
+                          <p className="text-sm font-bold text-gray-800 truncate">{userData.name}</p>
+                          <p className="text-[10px] text-gray-500">{userData.role}</p>
+                        </div>
+                        <svg className="w-4 h-4 text-gray-400 group-hover:text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
+                    </div>
+                 )}
+              </div>
             </div>
           </aside>
 
-          {/* Main Area */}
-          <main className="flex-1 h-full overflow-y-auto p-4 md:p-8 pb-32">
+          {/* Main Content Area */}
+          <main className="flex-1 h-full overflow-y-auto p-4 md:p-6 lg:p-8 pb-32 lg:pb-8 scroll-smooth relative">
             
-            <div className="md:hidden flex justify-between items-center mb-8">
-                <div className="flex items-center gap-3">
-                   <img src={APP_LOGO} className="w-10 h-10 object-contain" />
-                   <h1 className="text-xl font-black text-[#4A5D23] truncate max-w-[150px]">{userData.farmName}</h1>
+            {/* Mobile Header */}
+            <div className="lg:hidden flex flex-col mb-6 sticky top-0 z-50">
+                {isGuest && (
+                   <div className="bg-gray-800 text-white text-[10px] font-bold tracking-widest uppercase py-1 text-center w-full rounded-t-2xl">
+                      👁️ โหมดผู้เยี่ยมชม (อ่านอย่างเดียว)
+                   </div>
+                )}
+                <div className={`flex justify-between items-center bg-white/80 backdrop-blur-md p-4 border border-gray-100 card-shadow ${isGuest ? 'rounded-b-2xl' : 'rounded-2xl'}`}>
+                    <div className="flex items-center gap-3">
+                       <img src={APP_LOGO} className="w-8 h-8 object-contain" />
+                       <div>
+                         <h1 className="text-sm font-bold text-gray-800 truncate">{userData.farmName}</h1>
+                         <p className="text-[10px] text-emerald-600 font-semibold">Dashboard</p>
+                       </div>
+                    </div>
+                    {isGuest ? (
+                        <button onClick={onLogout} className="text-[10px] font-bold bg-white border border-gray-200 px-3 py-1.5 rounded-lg text-gray-600 shadow-sm flex items-center gap-1">
+                           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg> ออก
+                        </button>
+                    ) : (
+                        <div onClick={()=>setShowProfileEditor(true)} className="relative w-10 h-10 rounded-full border-2 border-white shadow-sm cursor-pointer">
+                          <img src={userData.avatar} className="w-full h-full rounded-full object-cover" />
+                          {alerts.length > 0 && <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>}
+                        </div>
+                    )}
                 </div>
-                <div onClick={()=>setShowProfileEditor(true)} className="w-10 h-10 rounded-full border-2 border-[#4A5D23] overflow-hidden shadow-md"><img src={userData.avatar} className="w-full h-full object-cover" /></div>
             </div>
 
-            {/* TAB: DASHBOARD */}
+            {/* TAB: DASHBOARD (Overview) */}
             {activeTab === 'dashboard' && (
               <div className="space-y-6 animate-in fade-in duration-500">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div className="p-5 bg-white rounded-3xl shadow-sm border border-gray-100"><p className="text-[10px] font-bold text-gray-400 uppercase">Hum.</p><h3 className="text-2xl font-black text-blue-500">{soilStats.moisture}%</h3></div>
-                  <div className="p-5 bg-white rounded-3xl shadow-sm border border-gray-100"><p className="text-[10px] font-bold text-gray-400 uppercase">Temp</p><h3 className="text-2xl font-black text-orange-500">32°C</h3></div>
-                  <div className="p-5 bg-white rounded-3xl shadow-sm border border-gray-100"><p className="text-[10px] font-bold text-gray-400 uppercase">Active</p><h3 className="text-2xl font-black text-green-700">{robots.length}</h3></div>
-                  <div className="p-5 bg-white rounded-3xl shadow-sm border border-gray-100"><p className="text-[10px] font-bold text-gray-400 uppercase">Alerts</p><h3 className="text-2xl font-black text-red-500">{alerts.length}</h3></div>
-                </div>
-                <div className="w-full h-[350px] bg-[#D4E0C2] rounded-[3rem] relative border-4 border-white shadow-xl flex items-center justify-center overflow-hidden">
-                    <span className="text-earth-green font-black opacity-30 text-2xl tracking-tighter uppercase">Live Sat-Map</span>
-                    {robots.map((r, i) => (
-                      <div key={r.id} className="absolute bg-white p-1 rounded-full shadow-2xl border-4 border-orange-400 animate-bounce w-14 h-14 z-10 overflow-hidden flex items-center justify-center" style={{top: 20+(i*20)+'%', left: 40+(i*15)+'%'}}>
-                        <img src={r.image} className="w-full h-full object-cover rounded-full" />
+                
+                {/* Stats Grid */}
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  {[
+                    { label: 'ความชื้นในดิน', value: `${soilStats.moisture}%`, icon: '💧', color: 'text-blue-500', bg: 'bg-blue-50' },
+                    { label: 'อุณหภูมิอากาศ', value: '32°C', icon: '🌡️', color: 'text-orange-500', bg: 'bg-orange-50' },
+                    { label: 'หุ่นยนต์ทำงาน', value: robots.length, icon: '🤖', color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                    { label: 'การแจ้งเตือน', value: alerts.length, icon: '🔔', color: 'text-red-500', bg: 'bg-red-50' }
+                  ].map((stat, i) => (
+                    <div key={i} className="p-5 bg-white rounded-[2rem] card-shadow border border-gray-100 flex flex-col justify-center relative overflow-hidden group hover:-translate-y-1 transition-transform">
+                      <div className={`absolute -right-4 -top-4 w-16 h-16 rounded-full ${stat.bg} opacity-50 group-hover:scale-150 transition-transform duration-500`}></div>
+                      <div className="relative z-10">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-lg">{stat.icon}</span>
+                          <p className="text-[11px] text-gray-500 font-semibold">{stat.label}</p>
+                        </div>
+                        <h3 className={`text-3xl font-bold ${stat.color}`}>{stat.value}</h3>
                       </div>
-                    ))}
-                    {plantZones.map((z, i) => (
-                        <div key={z.id} className="absolute bg-white/90 px-3 py-1 rounded-full shadow-sm text-[10px] font-black text-earth-green border" style={{top: (i*25)+10+'%', left: (i*15)+5+'%'}}>Zone {z.id}</div>
-                    ))}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Interactive Farm Map */}
+                <div className="w-full h-[450px] lg:h-[500px] bg-white rounded-[2.5rem] card-shadow border border-gray-100 relative overflow-hidden p-2">
+                    <div className="absolute top-6 left-6 z-30">
+                      <h3 className="text-lg font-bold text-gray-800">Live Map</h3>
+                      <p className="text-xs text-gray-500 flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> อัพเดทเรียลไทม์</p>
+                    </div>
+
+                    <div className="w-full h-full rounded-[2rem] farm-pattern relative overflow-hidden border border-indigo-100">
+                      {/* Zones Layout */}
+                      <div className="absolute inset-4 md:inset-8 grid grid-cols-2 grid-rows-2 gap-4 opacity-80">
+                         {plantZones.map((z, i) => (
+                           <div key={z.id} className={`rounded-[1.5rem] border border-white/40 bg-gradient-to-br ${z.color} opacity-20 flex items-center justify-center`}>
+                           </div>
+                         ))}
+                      </div>
+
+                      {/* Plant Indicators */}
+                      {plantZones.map((z) => (
+                          <div key={z.id} className="absolute bg-white/90 backdrop-blur-sm px-4 py-2.5 rounded-2xl shadow-lg border border-gray-100 z-20 flex items-center gap-3 transform -translate-x-1/2 -translate-y-1/2 hover:scale-110 transition-transform cursor-pointer" style={{top: z.top, left: z.left}}>
+                             <span className="text-2xl drop-shadow-md bg-gray-50 w-10 h-10 rounded-full flex items-center justify-center">{z.icon}</span> 
+                             <div>
+                               <p className="text-xs font-bold text-gray-800 leading-none mb-1">{z.name}</p>
+                               <div className="flex gap-2 text-[10px] font-semibold">
+                                 <span className={z.health > 80 ? 'text-emerald-600' : 'text-orange-500'}>Health {z.health}%</span>
+                               </div>
+                             </div>
+                          </div>
+                      ))}
+
+                      {/* Robots */}
+                      {robots.map((r, i) => (
+                        <div key={r.id} className="absolute bg-white p-1 rounded-full shadow-xl border-2 border-emerald-400 w-14 h-14 z-30 flex items-center justify-center transition-all duration-1000" style={{top: (i*30)+35+'%', left: (i*40)+30+'%'}}>
+                          <img src={r.image} className="w-full h-full object-cover rounded-full" />
+                          <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white animate-pulse"></div>
+                        </div>
+                      ))}
+                    </div>
                 </div>
               </div>
             )}
 
-            {/* TAB: SOIL (Tester) */}
+            {/* TAB: SOIL */}
             {activeTab === 'soil' && (
               <div className="space-y-6 animate-in fade-in duration-500">
-                <h2 className="text-2xl font-black text-[#4A5D23]">วิเคราะห์คุณภาพดิน</h2>
+                <div className="flex justify-between items-end mb-2">
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-800">วิเคราะห์คุณภาพดิน</h2>
+                    <p className="text-sm text-gray-500">Soil Health & Analytics</p>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                  <div className="p-8 bg-white rounded-[2.5rem] border shadow-xl">
-                    <h3 className="font-black text-[#8B5A2B] mb-8 border-b pb-4 uppercase text-xs">🕹️ Soil Simulator</h3>
-                    <div className="space-y-6">
-                       <div><label className="text-[10px] font-bold text-green-600 block mb-2 uppercase">Nitrogen (N): {soilStats.N}%</label><input type="range" className="w-full accent-[#4A5D23]" min="0" max="100" value={soilStats.N} onChange={e=>setSoilStats({...soilStats, N: Number(e.target.value)})} /></div>
-                       <div><label className="text-[10px] font-bold text-orange-600 block mb-2 uppercase">Phosphorus (P): {soilStats.P}%</label><input type="range" className="w-full accent-orange-500" min="0" max="100" value={soilStats.P} onChange={e=>setSoilStats({...soilStats, P: Number(e.target.value)})} /></div>
-                       <div><label className="text-[10px] font-bold text-yellow-600 block mb-2 uppercase">Potassium (K): {soilStats.K}%</label><input type="range" className="w-full accent-yellow-500" min="0" max="100" value={soilStats.K} onChange={e=>setSoilStats({...soilStats, K: Number(e.target.value)})} /></div>
-                       <div className="pt-4 border-t"><label className="text-[10px] font-bold text-blue-600 block mb-2 tracking-widest uppercase">Moisture: {soilStats.moisture}%</label><input type="range" className="w-full accent-blue-600" min="0" max="100" value={soilStats.moisture} onChange={e=>setSoilStats({...soilStats, moisture: Number(e.target.value)})} /></div>
+                  {/* Simulator Controls */}
+                  <div className="relative p-6 md:p-8 bg-white rounded-[2.5rem] card-shadow border border-gray-100 h-fit overflow-hidden">
+                    {/* Guest Lock Overlay */}
+                    {isGuest && (
+                       <div className="absolute inset-0 bg-white/60 backdrop-blur-[2px] z-10 flex flex-col items-center justify-center text-center p-4">
+                          <span className="p-3 bg-gray-100 rounded-full mb-3 text-gray-500 shadow-sm"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg></span>
+                          <h4 className="font-bold text-gray-800">โหมดเยี่ยมชม</h4>
+                          <p className="text-xs text-gray-500">ไม่สามารถปรับตั้งค่าได้</p>
+                       </div>
+                    )}
+
+                    <div className={`flex items-center gap-2 mb-6 pb-4 border-b border-gray-100 ${isGuest ? 'opacity-30' : ''}`}>
+                      <span className="p-2 bg-purple-50 rounded-lg text-purple-600"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg></span>
+                      <h3 className="font-bold text-gray-700">Simulator (ตัวจำลอง)</h3>
+                    </div>
+                    
+                    <div className={`space-y-6 ${isGuest ? 'opacity-30' : ''}`}>
+                       <div>
+                         <div className="flex justify-between mb-2"><label className="text-xs font-bold text-gray-600">ไนโตรเจน (N)</label><span className="text-xs font-bold text-emerald-600">{soilStats.N}%</span></div>
+                         <input disabled={isGuest} type="range" className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" min="0" max="100" value={soilStats.N} onChange={e=>setSoilStats({...soilStats, N: Number(e.target.value)})} />
+                       </div>
+                       <div>
+                         <div className="flex justify-between mb-2"><label className="text-xs font-bold text-gray-600">ฟอสฟอรัส (P)</label><span className="text-xs font-bold text-orange-500">{soilStats.P}%</span></div>
+                         <input disabled={isGuest} type="range" className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-orange-500" min="0" max="100" value={soilStats.P} onChange={e=>setSoilStats({...soilStats, P: Number(e.target.value)})} />
+                       </div>
+                       <div>
+                         <div className="flex justify-between mb-2"><label className="text-xs font-bold text-gray-600">โพแทสเซียม (K)</label><span className="text-xs font-bold text-yellow-500">{soilStats.K}%</span></div>
+                         <input disabled={isGuest} type="range" className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-yellow-400" min="0" max="100" value={soilStats.K} onChange={e=>setSoilStats({...soilStats, K: Number(e.target.value)})} />
+                       </div>
+                       <div className="pt-4 border-t border-gray-100">
+                         <div className="flex justify-between mb-2"><label className="text-xs font-bold text-gray-600">ความชื้นดิน (Moisture)</label><span className="text-xs font-bold text-blue-500">{soilStats.moisture}%</span></div>
+                         <input disabled={isGuest} type="range" className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-500" min="0" max="100" value={soilStats.moisture} onChange={e=>setSoilStats({...soilStats, moisture: Number(e.target.value)})} />
+                       </div>
                     </div>
                   </div>
-                  <div className="lg:col-span-2 p-10 bg-white rounded-[3rem] shadow-sm flex flex-col items-center">
-                    <h3 className="font-black text-gray-400 mb-8 uppercase text-[10px] tracking-[0.2em]">Visualized Trends (Area Chart)</h3>
-                    <div className="w-full h-64 border-b border-l border-gray-100 mb-2">
-                        <AreaChart data={[soilStats.N, soilStats.P, soilStats.K, soilStats.moisture]} color="#4A5D23" labels={['N','P','K','Hum.']} />
+
+                  {/* Chart Area */}
+                  <div className="lg:col-span-2 p-6 md:p-8 bg-white rounded-[2.5rem] card-shadow border border-gray-100 flex flex-col">
+                    <h3 className="font-bold text-gray-700 mb-6 flex items-center gap-2">
+                      <span className="w-2 h-6 bg-emerald-500 rounded-full"></span>
+                      ระดับธาตุอาหารและความชื้น (Real-time)
+                    </h3>
+                    <div className="flex-1 min-h-[300px] flex items-end">
+                      <AreaChart 
+                        dataSets={[{data: [soilStats.N, soilStats.P, soilStats.K, soilStats.moisture], color: "#10b981", strokeWidth: "3", fillOpacity: "0.25"}]} 
+                        labels={['Nitrogen (N)','Phosphorus (P)','Potassium (K)','Moisture']} 
+                      />
                     </div>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* TAB: PLANT HEALTH */}
+            {/* TAB: REPORTS */}
+            {activeTab === 'reports' && (
+              <div className="space-y-6 animate-in fade-in duration-500">
+                 <div>
+                    <h2 className="text-2xl font-bold text-gray-800">สถิติและรายงานผล</h2>
+                    <p className="text-sm text-gray-500">Intelligence Analytics</p>
+                 </div>
+                 
+                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="p-6 md:p-8 bg-white rounded-[2.5rem] card-shadow border border-gray-100">
+                       <h3 className="font-bold text-gray-700 mb-6 flex justify-between items-center">
+                         <span>แนวโน้มการเกิดโรคพืช</span>
+                         <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-1 rounded-md">6 เดือนย้อนหลัง</span>
+                       </h3>
+                       <AreaChart 
+                          maxValue={20} height="h-60"
+                          dataSets={[
+                             { data: [5, 8, 12, 10, 4, 3], color: "#ef4444", strokeWidth: "3", fillOpacity: "0.2" },
+                             { data: [8, 11, 14, 9, 6, 8], color: "#d1d5db", strokeWidth: "2", fillOpacity: "0.1" }
+                          ]} 
+                          labels={['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.']} 
+                       />
+                       <div className="mt-6 flex justify-center gap-6 text-xs font-semibold text-gray-500">
+                          <span className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-red-500 shadow-sm shadow-red-200"></span> ปีปัจจุบัน (-35%)</span>
+                          <span className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-gray-300"></span> ปีก่อนหน้า</span>
+                       </div>
+                    </div>
+                    
+                    <div className="p-6 md:p-8 bg-white rounded-[2.5rem] card-shadow border border-gray-100">
+                       <h3 className="font-bold text-gray-700 mb-6 flex justify-between items-center">
+                         <span>ดัชนีสุขภาพดิน (%)</span>
+                         <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-1 rounded-md">6 เดือนย้อนหลัง</span>
+                       </h3>
+                       <AreaChart 
+                          height="h-60"
+                          dataSets={[
+                             { data: [70, 75, 82, 88, 92, 95], color: "#10b981", strokeWidth: "3", fillOpacity: "0.25" },
+                             { data: [65, 68, 70, 72, 70, 74], color: "#d1d5db", strokeWidth: "2", fillOpacity: "0.1" }
+                          ]} 
+                          labels={['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.']} 
+                       />
+                       <div className="mt-6 flex justify-center gap-6 text-xs font-semibold text-gray-500">
+                          <span className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-emerald-500 shadow-sm shadow-emerald-200"></span> หลังใช้หุ่นยนต์</span>
+                          <span className="flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-gray-300"></span> แบบดั้งเดิม</span>
+                       </div>
+                    </div>
+                 </div>
+
+                 {/* Highlight Banner */}
+                 <div className="p-8 md:p-10 bg-gradient-to-br from-gray-900 to-gray-800 rounded-[2.5rem] text-white shadow-xl relative overflow-hidden flex flex-col md:flex-row items-center gap-8">
+                    <div className="absolute -right-10 -top-10 w-64 h-64 bg-emerald-500/20 rounded-full blur-3xl"></div>
+                    <div className="flex-1 relative z-10">
+                      <h3 className="font-bold text-xl mb-3 text-emerald-400">บทสรุปจาก AI (Insight)</h3>
+                      <p className="text-sm text-gray-300 leading-relaxed font-light">
+                        "ความชื้นดินในสัปดาห์นี้มีความสม่ำเสมอมากขึ้นกว่ารอบการผลิตเดิมถึง 25% เนื่องจากระบบเปิดน้ำอัตโนมัติทำงานร่วมกับข้อมูลจาก FarmBot ได้อย่างแม่นยำ แนะนำให้คงค่า NPK ไว้ที่ระดับปัจจุบัน"
+                      </p>
+                    </div>
+                    <div className="w-full md:w-1/3 relative z-10 bg-white/10 p-4 rounded-2xl border border-white/20 backdrop-blur-sm text-center">
+                       <p className="text-xs text-gray-400 mb-1">ผลผลิตคาดการณ์</p>
+                       <p className="text-3xl font-bold text-white">+18<span className="text-lg text-emerald-400">%</span></p>
+                    </div>
+                 </div>
+              </div>
+            )}
+
+            {/* TAB: ALERTS */}
+            {activeTab === 'alerts' && (
+              <div className="space-y-6 animate-in fade-in duration-500">
+                 <div className="flex justify-between items-end mb-4">
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-800">การแจ้งเตือน</h2>
+                    <p className="text-sm text-gray-500">System Notifications</p>
+                  </div>
+                 </div>
+
+                 <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar">
+                    {['all', 'critical', 'warning', 'info'].map(f => (
+                       <button key={f} onClick={()=>setAlertFilter(f)} className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${alertFilter===f ? 'bg-gray-800 text-white shadow-md' : 'bg-white border border-gray-200 text-gray-500 hover:bg-gray-50'}`}>
+                          {f==='all' ? 'ทั้งหมด' : f==='critical' ? '🔴 วิกฤต (Critical)' : f==='warning' ? '🟡 เตือน (Warning)' : '🔵 ทั่วไป (Info)'}
+                       </button>
+                    ))}
+                 </div>
+                 
+                 <div className="space-y-3">
+                    {filteredAlerts.length > 0 ? filteredAlerts.map(a => (
+                       <div key={a.id} className="p-5 rounded-2xl bg-white card-shadow border border-gray-100 flex gap-4 items-start group hover:border-gray-200 transition-colors">
+                          <div className={`p-3 rounded-full flex-shrink-0 ${a.type==='critical' ? 'bg-red-50 text-red-500' : a.type==='warning' ? 'bg-yellow-50 text-yellow-500' : 'bg-blue-50 text-blue-500'}`}>
+                             {a.type==='critical' ? <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg> 
+                             : a.type==='warning' ? <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                             : <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>}
+                          </div>
+                          <div className="flex-1">
+                             <div className="flex justify-between items-start mb-1">
+                                <h4 className={`font-bold text-sm md:text-base ${a.type==='critical' ? 'text-red-600' : 'text-gray-800'}`}>{a.title}</h4>
+                                <span className="text-[10px] text-gray-400 whitespace-nowrap">{a.time}</span>
+                             </div>
+                             <p className="text-xs md:text-sm text-gray-500 mb-2">{a.detail}</p>
+                             <span className="inline-block text-[10px] px-2.5 py-1 rounded-md bg-gray-100 text-gray-600 font-medium">{a.zone}</span>
+                          </div>
+                       </div>
+                    )) : (
+                      <div className="flex flex-col items-center justify-center py-20 bg-white rounded-[2rem] border border-gray-100 border-dashed">
+                        <svg className="w-12 h-12 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <p className="text-gray-400 font-medium">ไม่มีการแจ้งเตือนในขณะนี้</p>
+                      </div>
+                    )}
+                 </div>
+              </div>
+            )}
+
+            {/* TAB: PLANT */}
             {activeTab === 'plant' && (
-              <div className="space-y-6 animate-in fade-in duration-500 text-center">
-                <h2 className="text-2xl font-black text-left">Plant Health Intelligence</h2>
-                <div className="p-8 bg-white rounded-[3rem] shadow-sm border border-white">
-                    <h3 className="font-black text-gray-400 mb-8 uppercase text-[10px] tracking-widest underline decoration-green-400 decoration-4">Health Index</h3>
-                    <div className="w-40 h-40 rounded-full border-[15px] border-[#4A5D23] border-t-gray-100 mx-auto flex items-center justify-center shadow-xl shadow-green-50"><span className="text-4xl font-black text-[#4A5D23]">92%</span></div>
-                    <p className="mt-8 text-gray-400 font-bold text-sm uppercase italic">"Overall Condition: Optimal"</p>
+              <div className="space-y-6 animate-in fade-in duration-500">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-800">สุขภาพพืช</h2>
+                  <p className="text-sm text-gray-500">Crop Health Monitoring</p>
                 </div>
-                <div className="p-6 bg-red-50 rounded-[2rem] border border-red-100 flex gap-4 text-left items-center">
-                    <span className="text-4xl">🍄</span>
-                    <div><h4 className="font-bold text-red-700">พบเชื้อราในโซน B</h4><p className="text-xs text-red-500 font-bold opacity-70">AI ตรวจพบความเสี่ยงสูง แนะนำให้ลดความชื้นในดินทันที</p></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {plantZones.map(z => (
+                        <div key={z.id} className="p-6 bg-white rounded-[2rem] card-shadow border border-gray-100">
+                           <div className="flex items-center gap-4 mb-5">
+                              <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${z.color} p-0.5 shadow-sm`}>
+                                <div className="w-full h-full bg-white rounded-xl flex items-center justify-center text-2xl">{z.icon}</div>
+                              </div>
+                              <div className="flex-1">
+                                <h4 className="font-bold text-gray-800">{z.name}</h4>
+                                <p className="text-xs text-gray-500">พื้นที่แปลง {z.id}</p>
+                              </div>
+                              <div className="text-right">
+                                <span className={`text-xl font-bold ${z.health > 80 ? 'text-emerald-500' : 'text-orange-500'}`}>{z.health}%</span>
+                                <p className="text-[10px] text-gray-400">ค่าสุขภาพ</p>
+                              </div>
+                           </div>
+                           <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                             <div className={`h-full ${z.health > 80 ? 'bg-emerald-500' : 'bg-orange-400'}`} style={{width: z.health+'%'}}></div>
+                           </div>
+                        </div>
+                    ))}
                 </div>
               </div>
             )}
 
-            {/* TAB: ROBOT LIST (Fleet management) */}
+            {/* TAB: ROBOT LIST */}
             {activeTab === 'robot_list' && (
                <div className="space-y-6 animate-in fade-in duration-500">
-                  <div className="flex justify-between items-center"><h2 className="text-2xl font-black">Bot Fleet</h2><button onClick={()=>setCurrentScreen('robot_setup')} className="bg-[#4A5D23] text-white px-5 py-2.5 rounded-full font-black text-xs shadow-xl transition-transform active:scale-95">+ จัดการหุ่นยนต์</button></div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex justify-between items-end">
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-800">สถานะหุ่นยนต์</h2>
+                      <p className="text-sm text-gray-500">Fleet Active Status</p>
+                    </div>
+                    {!isGuest && (
+                      <button onClick={()=>setCurrentScreen('robot_setup')} className="text-xs font-bold bg-emerald-50 text-emerald-600 px-3 py-2 rounded-xl">⚙️ จัดการหุ่นยนต์</button>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                      {robots.map(r => (
-                        <div key={r.id} className="p-6 bg-white rounded-[2.5rem] shadow-sm border border-white flex items-center gap-5">
-                           <img src={r.image} className="w-20 h-20 rounded-2xl object-cover shadow-md border" />
-                           <div className="flex-1">
-                              <h4 className="font-black text-xl leading-tight">{r.name}</h4>
-                              <p className="text-[10px] text-blue-500 font-bold uppercase tracking-widest mb-2">{r.status}</p>
-                              <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden"><div className="h-full bg-green-500" style={{width:r.battery+'%'}}></div></div>
-                              <p className="text-[8px] font-black text-gray-300 mt-1">BATTERY: {r.battery}%</p>
+                        <div key={r.id} className="p-5 bg-white rounded-[2rem] border border-gray-100 card-shadow flex flex-col gap-4">
+                           <div className="flex items-start gap-4">
+                             <img src={r.image} className="w-16 h-16 rounded-2xl object-cover border border-gray-100 bg-gray-50" />
+                             <div className="flex-1">
+                                <h4 className="font-bold text-gray-800 text-lg leading-tight">{r.name}</h4>
+                                <p className="text-xs text-emerald-500 font-medium flex items-center gap-1 mt-1"><span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span> {r.status}</p>
+                             </div>
+                           </div>
+                           <div className="bg-gray-50 p-3 rounded-xl">
+                              <div className="flex justify-between text-xs font-semibold text-gray-500 mb-1">
+                                <span>พลังงานแบตเตอรี่</span>
+                                <span>{r.battery}%</span>
+                              </div>
+                              <div className="w-full h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                <div className={`h-full ${r.battery > 20 ? 'bg-emerald-500' : 'bg-red-500'}`} style={{width:r.battery+'%'}}></div>
+                              </div>
                            </div>
                         </div>
                      ))}
@@ -444,58 +905,37 @@
                </div>
             )}
 
-            {/* TAB: REPORTS */}
-            {activeTab === 'reports' && (
-              <div className="space-y-6 animate-in fade-in duration-500">
-                 <h2 className="text-2xl font-black">Statistics</h2>
-                 <div className="p-10 bg-white rounded-[3.5rem] shadow-sm border border-white text-center">
-                    <h3 className="font-black text-gray-400 mb-10 uppercase text-[10px] tracking-[0.2em]">Yield Performance (Mock)</h3>
-                    <div className="flex justify-center items-end gap-10 h-40 border-b border-gray-50 pb-2 mb-8">
-                       <div className="flex flex-col items-center gap-3"><div className="w-14 bg-gray-100 rounded-t-xl shadow-inner" style={{height:'35%'}}></div><span className="text-[8px] font-black opacity-40 uppercase">Normal</span></div>
-                       <div className="flex flex-col items-center gap-3"><div className="w-14 bg-[#4A5D23] rounded-t-xl shadow-xl animate-pulse" style={{height:'88%'}}></div><span className="text-[8px] font-black text-[#4A5D23] uppercase tracking-widest">Farm OS (+45%)</span></div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                       <div className="p-4 bg-green-50 rounded-2xl"><p className="text-[10px] font-bold text-green-700">ผลผลิต</p><p className="text-xl font-black">2.4 ตัน</p></div>
-                       <div className="p-4 bg-orange-50 rounded-2xl"><p className="text-[10px] font-bold text-orange-700">ต้นทุน</p><p className="text-xl font-black">45,000 บ.</p></div>
-                    </div>
-                 </div>
-              </div>
-            )}
-
-            {/* TAB: ALERTS (Notification Center with Filter) */}
-            {activeTab === 'alerts' && (
-              <div className="space-y-6 animate-in fade-in duration-500">
-                 <h2 className="text-2xl font-black">Alerts</h2>
-                 <div className="flex gap-2 overflow-x-auto pb-4 hide-scrollbar">
-                    {['all', 'critical', 'warning', 'info'].map(f => (
-                       <button key={f} onClick={()=>setAlertFilter(f)} className={`px-5 py-2.5 rounded-full text-[10px] font-black transition-all border-2 ${alertFilter===f ? 'bg-black border-black text-white shadow-xl' : 'bg-white border-gray-100 text-gray-400'}`}>
-                          {f==='all' ? 'All' : f==='critical' ? '🔴 Critical' : f==='warning' ? '🟡 Warning' : '🔵 Info'}
-                       </button>
-                    ))}
-                 </div>
-                 <div className="space-y-4">
-                    {filteredAlerts.length > 0 ? filteredAlerts.map(a => (
-                       <div key={a.id} className={`p-6 rounded-[2rem] border-2 shadow-sm ${a.type==='critical' ? 'bg-red-50 border-red-100 text-red-700' : 'bg-white border-gray-50'}`}>
-                          <div className="flex justify-between items-center mb-1"><h4 className="font-black text-lg">{a.title}</h4><span className="text-[10px] opacity-30 font-black">{a.time}</span></div>
-                          <p className="text-sm opacity-60 font-bold mb-3">{a.detail}</p>
-                          <span className="text-[9px] bg-gray-100 px-3 py-0.5 rounded-full font-black uppercase tracking-widest opacity-40">{a.zone}</span>
-                       </div>
-                    )) : <div className="text-center py-20 font-bold text-gray-300 italic">"No alerts found"</div>}
-                 </div>
-              </div>
-            )}
-            
+            {/* TAB: RESOURCE (Control) */}
             {activeTab === 'resource' && (
                <div className="space-y-6 animate-in fade-in duration-500">
-                  <h2 className="text-2xl font-black">Controls</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-800">ควบคุมระบบฟาร์ม</h2>
+                    <p className="text-sm text-gray-500">Manual & Auto Control Systems</p>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                      {plantZones.map(z => (
-                        <div key={z.id} className="p-8 bg-white rounded-[2.5rem] shadow-sm border border-gray-100 flex flex-col group hover:border-[#4A5D23] transition-all">
+                        <div key={z.id} className={`p-6 md:p-8 bg-white rounded-[2.5rem] card-shadow border border-gray-100 flex flex-col group transition-colors ${!isGuest ? 'hover:border-emerald-200' : ''}`}>
                            <div className="flex justify-between items-start mb-8">
-                              <div><h3 className="font-black text-2xl tracking-tight tracking-tight">Zone {z.id}</h3><p className="text-xs text-gray-400 font-bold uppercase">{z.name}</p></div>
-                              <span className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl shadow-inner ${z.moisture < 40 ? 'bg-orange-100 text-orange-600 animate-pulse' : 'bg-blue-100 text-blue-600'}`}>{z.moisture}%</span>
+                              <div>
+                                <h3 className="font-bold text-xl text-gray-800">โซน {z.id}</h3>
+                                <p className="text-sm text-gray-500">{z.name}</p>
+                              </div>
+                              <div className="text-center">
+                                <span className={`w-14 h-14 rounded-2xl flex items-center justify-center font-bold text-xl ${z.moisture < 40 ? 'bg-orange-50 text-orange-500 border border-orange-100' : 'bg-blue-50 text-blue-500 border border-blue-100'}`}>
+                                  {z.moisture}%
+                                </span>
+                                <p className="text-[10px] text-gray-400 mt-1">ความชื้นดิน</p>
+                              </div>
                            </div>
-                           <button className="w-full bg-blue-500 text-white py-4 rounded-2xl font-black shadow-lg shadow-blue-100 transition-transform active:scale-95">รดน้ำตอนนี้</button>
+                           <div className="mt-auto">
+                             <button disabled={isGuest} className={`w-full py-3.5 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${isGuest ? 'bg-gray-100 text-gray-400 border border-gray-200 cursor-not-allowed' : 'bg-blue-50 hover:bg-blue-500 text-blue-600 hover:text-white border border-blue-100 hover:border-blue-500'}`}>
+                               {isGuest ? (
+                                  <><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg> ล็อคโหมดผู้เยี่ยมชม</>
+                               ) : (
+                                  <><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg> เปิดระบบน้ำ (Irrigation)</>
+                               )}
+                             </button>
+                           </div>
                         </div>
                      ))}
                   </div>
@@ -504,14 +944,26 @@
 
           </main>
 
-          {/* Nav Mobile */}
-          <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 flex justify-around p-4 z-[400] rounded-t-[2.5rem] shadow-[0_-10px_25px_rgba(0,0,0,0.05)] pb-safe">
-             <button onClick={() => setActiveTab('dashboard')} className={`text-2xl transition-all ${activeTab === 'dashboard' ? 'scale-125 text-[#4A5D23] opacity-100' : 'opacity-20'}`}>📊</button>
-             <button onClick={() => setActiveTab('plant')} className={`text-2xl transition-all ${activeTab === 'plant' ? 'scale-125 text-[#4A5D23] opacity-100' : 'opacity-20'}`}>🌿</button>
-             <button onClick={() => setActiveTab('soil')} className={`text-2xl transition-all ${activeTab === 'soil' ? 'scale-125 text-[#4A5D23] opacity-100' : 'opacity-20'}`}>🧪</button>
-             <button onClick={() => setActiveTab('alerts')} className={`text-2xl transition-all ${activeTab === 'alerts' ? 'scale-125 text-[#4A5D23] opacity-100' : 'opacity-20'}`}>🔔</button>
-             <button onClick={() => setShowMobileMenu(true)} className={`text-2xl transition-all ${showMobileMenu ? 'scale-125 text-[#4A5D23] opacity-100' : 'opacity-20'}`}>⚙️</button>
-          </nav>
+          {/* Bottom Nav Mobile (Floating Glassmorphism) */}
+          <div className="lg:hidden fixed bottom-6 left-6 right-6 z-[400]">
+            <nav className="glass-nav rounded-[2rem] flex justify-around items-center p-2.5">
+               {menuItems.map(item => (
+                 <button 
+                   key={item.id} 
+                   onClick={() => setActiveTab(item.id)} 
+                   className={`p-3 rounded-2xl transition-all duration-300 flex flex-col items-center gap-1 ${activeTab === item.id ? 'bg-emerald-50 text-emerald-600 scale-110' : 'text-gray-400 hover:text-gray-600'}`}
+                 >
+                   {item.icon}
+                 </button>
+               ))}
+               {!isGuest && (
+                 <button onClick={()=>setShowProfileEditor(true)} className="p-3 rounded-2xl text-gray-400 hover:text-gray-600 transition-all">
+                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                 </button>
+               )}
+            </nav>
+          </div>
+          
         </div>
       );
     }
