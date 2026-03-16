@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Farm OS | Smart Agriculture</title>
+  
+  <!-- โหลด Tailwind CSS (สำหรับความสวยงาม) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- โหลด Font Mitr (ตัวหนังสือกลมมน) -->
+  <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Mitr', sans-serif; }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  </style>
+
+  <!-- โหลด React, ReactDOM และ Babel สำหรับประมวลผลโค้ดในไฟล์เดียว -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-[#F9F7F3]">
+  
+  <!-- จุดที่ React จะเข้าไปทำงาน -->
+  <div id="root"></div>
+
+  <!-- โค้ด React Farm OS แบบเต็ม (แปลงให้อยู่ใน HTML) -->
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // --- Theme Colors ---
+    const theme = {
+      bg: 'bg-[#F9F7F3]', sidebar: 'bg-[#EAE4D3]', card: 'bg-white',
+      primary: 'text-[#4A5D23]', primaryBg: 'bg-[#4A5D23]',
+      primaryLight: 'bg-[#8A9A5B]', textMain: 'text-[#3E3A34]',
+      textMuted: 'text-[#7A756C]',
+      input: 'bg-white border border-[#D9D1BE] focus:border-[#4A5D23] focus:ring-2 focus:ring-[#4A5D23]/20 outline-none transition-all rounded-xl px-4 py-3 w-full text-[#3E3A34]'
+    };
+
+    function App() {
+      const [currentScreen, setCurrentScreen] = useState('splash');
+      const [userData, setUserData] = useState({ name: '', email: '', farmName: '', phone: '', role: 'เจ้าของฟาร์ม' });
+      const [robots, setRobots] = useState([
+        { id: 1, name: 'FarmBot-Alpha', ip: '192.168.1.101', status: 'กำลังสแกน', zone: 'โซน A', battery: 85, signal: 'ดีมาก' },
+        { id: 2, name: 'FarmBot-Beta', ip: '192.168.1.102', status: 'ชาร์จแบตฯ', zone: 'สถานีชาร์จ', battery: 100, signal: 'ดีมาก' },
+      ]);
+      const [plantZones, setPlantZones] = useState([
+        { id: 'A', name: 'ผักสลัด (กรีนโอ๊ค)', status: 'ดีมาก', moisture: 45, area: '2 ไร่', schedule: null },
+        { id: 'B', name: 'มะเขือเทศเชอรี่', status: 'เสี่ยงโรค', moisture: 30, area: '1.5 ไร่', schedule: '16:00 (30 นาที)' },
+      ]);
+      const [farmUsers, setFarmUsers] = useState([]);
+      const [alerts, setAlerts] = useState([
+        { id: 1, type: 'critical', title: 'พบร่องรอยโรคราน้ำค้าง', zone: 'โซน B', time: '10 นาทีที่แล้ว', detail: 'AI ตรวจพบความผิดปกติบนใบ' },
+        { id: 2, type: 'warning', title: 'ความชื้นดินต่ำกว่าเกณฑ์', zone: 'โซน B', time: '1 ชั่วโมงที่แล้ว', detail: 'ความชื้นลดลงเหลือ 30%' },
+      ]);
+
+      useEffect(() => {
+        if(userData.name && farmUsers.length === 0) {
+          setFarmUsers([
+            { id: 1, name: userData.name, role: userData.role, email: userData.email, online: true },
+            { id: 2, name: 'สมศักดิ์ ขยันงาน', role: 'ผู้จัดการฟาร์ม', email: 'som@farm.com', online: true },
+          ]);
+        }
+      }, [userData]);
+
+      const navigate = (screen) => setCurrentScreen(screen);
+
+      return (
+        <div className={`min-h-screen ${currentScreen === 'robot_setup' ? 'bg-[#141414]' : theme.bg}`}>
+          {currentScreen === 'splash' && <SplashScreen onFinish={() => navigate('login')} />}
+          {currentScreen === 'login' && <LoginScreen onNext={() => navigate('register')} setUserData={setUserData} userData={userData} />}
+          {currentScreen === 'register' && <RegisterScreen userData={userData} setUserData={setUserData} onNext={() => navigate('robot_setup')} onBack={() => navigate('login')} />}
+          {currentScreen === 'robot_setup' && <RobotSetupNetflix robots={robots} setRobots={setRobots} onNext={() => navigate('dashboard')} />}
+          {currentScreen === 'dashboard' && (
+            <FarmOS 
+              userData={userData} robots={robots} setRobots={setRobots}
+              plantZones={plantZones} setPlantZones={setPlantZones}
+              farmUsers={farmUsers} setFarmUsers={setFarmUsers} alerts={alerts}
+              onLogout={() => navigate('login')} 
+            />
+          )}
+        </div>
+      );
+    }
+
+    // --- Onboarding Screens ---
+    const SplashScreen = ({ onFinish }) => {
+      useEffect(() => { const timer = setTimeout(onFinish, 2000); return () => clearTimeout(timer); }, [onFinish]);
+      return (
+        <div className="flex flex-col items-center justify-center min-h-screen">
+          <div className={`w-32 h-32 rounded-full ${theme.primaryBg} text-white flex items-center justify-center shadow-2xl mb-6 text-6xl`}>🌱</div>
+          <h1 className="text-5xl font-black text-[#3E3A34] tracking-tight mb-2">Farm OS</h1>
+          <p className="text-[#8A9A5B] font-medium tracking-widest uppercase mb-8">Smart Agriculture</p>
+        </div>
+      );
+    };
+
+    const LoginScreen = ({ onNext, setUserData, userData }) => {
+      const [isLoading, setIsLoading] = useState(false);
+      const handleGoogleLogin = () => {
+        setIsLoading(true);
+        setTimeout(() => {
+          setIsLoading(false);
+          setUserData({ ...userData, name: 'ผู้ใช้งาน Google', email: 'user@gmail.com' });
+          onNext();
+        }, 1000);
+      };
+      return (
+        <div className="flex flex-col items-center justify-center min-h-screen p-6 relative">
+          <div className="w-full max-w-md bg-white p-8 rounded-[2rem] shadow-xl border border-[#EAE4D3] text-center">
+            <div className={`w-16 h-16 mx-auto rounded-2xl ${theme.primaryBg} text-white flex items-center justify-center shadow-lg mb-6 text-3xl`}>🌱</div>
+            <h2 className="text-3xl font-bold text-[#3E3A34] mb-2">เข้าสู่ระบบ</h2>
+            <p className="text-[#7A756C] mb-8">จัดการฟาร์มของคุณได้ทุกที่ ทุกเวลา</p>
+            <div className="space-y-4">
+              <button onClick={handleGoogleLogin} className="w-full bg-white border-2 border-gray-200 text-gray-700 py-3.5 rounded-2xl font-medium hover:bg-gray-50">🌐 ล็อกอินด้วย Google</button>
+              <button onClick={onNext} className="w-full bg-[#3E3A34] text-white py-3.5 rounded-2xl font-medium hover:bg-black">📱 ล็อกอินด้วยเบอร์โทรศัพท์</button>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const RegisterScreen = ({ userData, setUserData, onNext, onBack }) => (
+      <div className="flex flex-col items-center justify-center min-h-screen p-4">
+        <div className="w-full max-w-md bg-white p-8 rounded-[2rem] shadow-xl border border-[#EAE4D3]">
+          <h2 className="text-2xl font-bold text-[#3E3A34] mb-6">ข้อมูลผู้ใช้และฟาร์ม</h2>
+          <div className="space-y-4">
+            <input type="text" placeholder="ชื่อ - นามสกุล" className={theme.input} value={userData.name} onChange={e => setUserData({...userData, name: e.target.value})} />
+            <input type="text" placeholder="ชื่อฟาร์ม" className={theme.input} value={userData.farmName} onChange={e => setUserData({...userData, farmName: e.target.value})} />
+            <select className={theme.input} value={userData.role} onChange={e => setUserData({...userData, role: e.target.value})}>
+              <option>เจ้าของฟาร์ม</option>
+              <option>ผู้จัดการฟาร์ม</option>
+            </select>
+          </div>
+          <button onClick={onNext} className={`w-full mt-8 ${theme.primaryBg} text-white py-4 rounded-2xl font-bold text-lg hover:opacity-90`}>ยืนยันข้อมูล</button>
+        </div>
+      </div>
+    );
+
+    const RobotSetupNetflix = ({ robots, setRobots, onNext }) => (
+      <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-[#141414]">
+        <h1 className="text-3xl md:text-5xl font-bold text-white mb-10 text-center">หุ่นยนต์ตัวไหนที่คุณต้องการจัดการ?</h1>
+        <div className="flex flex-wrap justify-center gap-6">
+          {robots.map((robot) => (
+            <div key={robot.id} className="flex flex-col items-center">
+              <div className="w-28 h-28 md:w-36 md:h-36 rounded-2xl bg-gray-800 border-4 border-transparent hover:border-white transition-all flex items-center justify-center text-5xl">🤖</div>
+              <span className="text-gray-400 mt-4 font-medium">{robot.name}</span>
+            </div>
+          ))}
+          <div onClick={() => setRobots([...robots, {id: 3, name: 'New-Bot', ip:'-', status:'ว่าง', zone:'-', battery:100, signal:'-'}])} className="flex flex-col items-center cursor-pointer">
+            <div className="w-28 h-28 md:w-36 md:h-36 rounded-2xl border-4 border-gray-600 hover:border-white flex items-center justify-center text-5xl text-gray-500 hover:text-white">➕</div>
+            <span className="text-gray-600 mt-4 font-medium hover:text-white">เพิ่มหุ่นยนต์</span>
+          </div>
+        </div>
+        <button onClick={onNext} className="mt-16 px-8 py-3 bg-[#4A5D23] text-white font-bold rounded-md hover:bg-[#5e762c] text-lg">เข้าสู่ Dashboard</button>
+      </div>
+    );
+
+    // --- Main Dashboard ---
+    const FarmOS = ({ userData, robots, plantZones, alerts, onLogout }) => {
+      const [activeTab, setActiveTab] = useState('dashboard');
+      const menuItems = [
+        { id: 'dashboard', label: 'ภาพรวมฟาร์ม', icon: '📊' },
+        { id: 'resource', label: 'จัดการน้ำและปุ๋ย', icon: '💧' },
+        { id: 'robot', label: 'จัดการหุ่นยนต์', icon: '🤖' },
+        { id: 'alerts', label: 'การแจ้งเตือน', icon: '🔔' },
+      ];
+
+      return (
+        <div className="flex flex-col md:flex-row h-screen">
+          {/* Sidebar */}
+          <aside className={`hidden md:flex flex-col w-64 ${theme.sidebar} h-full border-r border-[#D9D1BE] p-6`}>
+            <div className="flex items-center gap-3 mb-8">
+              <div className={`p-2 rounded-xl ${theme.primaryBg} text-white`}>🌱</div>
+              <h1 className="text-xl font-black text-[#3E3A34] truncate">{userData.farmName || 'Farm OS'}</h1>
+            </div>
+            <div className="flex-1 space-y-2">
+              {menuItems.map(item => (
+                <button key={item.id} onClick={() => setActiveTab(item.id)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-left ${activeTab === item.id ? theme.primaryBg + ' text-white' : 'text-[#5C564B] hover:bg-white'}`}>
+                  <span>{item.icon}</span> {item.label}
+                </button>
+              ))}
+            </div>
+            <button onClick={onLogout} className="mt-auto bg-white p-3 rounded-xl text-center font-bold text-red-500 hover:bg-red-50">ออกจากระบบ</button>
+          </aside>
+
+          {/* Main Content */}
+          <main className="flex-1 h-full overflow-y-auto p-6 bg-white md:bg-transparent">
+            {activeTab === 'dashboard' && (
+              <div className="space-y-6">
+                <h2 className="text-2xl font-bold text-[#3E3A34]">ภาพรวมฟาร์ม</h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="p-5 rounded-3xl bg-green-50 border border-green-100"><p className="text-sm text-gray-500">สุขภาพโดยรวม</p><h3 className="text-2xl font-bold text-green-700">92%</h3></div>
+                  <div className="p-5 rounded-3xl bg-blue-50 border border-blue-100"><p className="text-sm text-gray-500">ความชื้นเฉลี่ย</p><h3 className="text-2xl font-bold text-blue-700">45%</h3></div>
+                  <div className="p-5 rounded-3xl bg-orange-50 border border-orange-100"><p className="text-sm text-gray-500">หุ่นยนต์ทำงาน</p><h3 className="text-2xl font-bold text-orange-700">{robots.length}</h3></div>
+                  <div className="p-5 rounded-3xl bg-red-50 border border-red-100"><p className="text-sm text-gray-500">แจ้งเตือนด่วน</p><h3 className="text-2xl font-bold text-red-700">1</h3></div>
+                </div>
+                <div className="w-full h-[300px] bg-[#D4E0C2] rounded-3xl relative border-2 border-[#C2D1A7] p-4 flex items-center justify-center overflow-hidden">
+                    <span className="text-gray-500 font-bold opacity-50 text-2xl">แผนที่ดาวเทียม</span>
+                    {robots.map((r, i) => <div key={r.id} className="absolute bg-white p-2 rounded-full shadow-lg border-2 border-orange-400 animate-bounce" style={{top: 30+(i*20)+'%', left: 40+(i*10)+'%'}}>🤖</div>)}
+                </div>
+              </div>
+            )}
+            
+            {activeTab === 'resource' && (
+              <div className="space-y-6">
+                <h2 className="text-2xl font-bold text-[#3E3A34]">ระบบจัดการน้ำและปุ๋ย</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {plantZones.map(zone => (
+                    <div key={zone.id} className="p-6 rounded-3xl border border-gray-200 bg-white shadow-sm">
+                      <h3 className="font-bold text-lg mb-2">โซน {zone.id} <span className="text-sm font-normal text-gray-500">{zone.name}</span></h3>
+                      <p className="text-blue-500 font-bold mb-4">ความชื้น: {zone.moisture}%</p>
+                      <button className="w-full bg-blue-500 text-white py-2 rounded-xl">💧 รดน้ำทันที</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'robot' && (
+              <div className="space-y-6">
+                <h2 className="text-2xl font-bold text-[#3E3A34]">จัดการหุ่นยนต์</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {robots.map((bot) => (
+                    <div key={bot.id} className="p-6 rounded-3xl border border-gray-200 bg-white shadow-sm">
+                      <h3 className="font-bold text-lg flex items-center gap-2">🤖 {bot.name}</h3>
+                      <p className="text-sm text-gray-500 mb-4">สถานะ: {bot.status} | แบตเตอรี่: {bot.battery}%</p>
+                      <button className="w-full bg-gray-900 text-white py-2 rounded-xl">สั่งการ</button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+             {activeTab === 'alerts' && (
+              <div className="space-y-6">
+                <h2 className="text-2xl font-bold text-[#3E3A34]">การแจ้งเตือน</h2>
+                <div className="space-y-3">
+                  {alerts.map((alert) => (
+                    <div key={alert.id} className={`p-4 rounded-xl border ${alert.type === 'critical' ? 'bg-red-50 border-red-200' : 'bg-orange-50 border-orange-200'}`}>
+                      <h4 className={`font-bold ${alert.type === 'critical' ? 'text-red-700' : 'text-orange-700'}`}>{alert.title} ({alert.zone})</h4>
+                      <p className="text-sm text-gray-600">{alert.detail}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </main>
+
+          {/* Mobile Nav */}
+          <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 flex justify-around p-3">
+            {menuItems.map(item => (
+               <button key={item.id} onClick={() => setActiveTab(item.id)} className={`text-xl ${activeTab === item.id ? 'opacity-100 scale-110' : 'opacity-50'}`}>
+                  {item.icon}
+               </button>
+            ))}
+          </nav>
+        </div>
+      );
+    }
+
+    // Render App
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
