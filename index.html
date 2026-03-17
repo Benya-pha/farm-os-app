@@ -135,7 +135,7 @@
         alert_urgent: '🔴 ด่วนมาก (Critical)', alert_warn: '🟡 เฝ้าระวัง (Warning)', alert_info: '🟢 ทั่วไป (Info)',
         export_pdf: 'Export PDF', export_excel: 'Export Excel', yield_comp: 'เปรียบเทียบผลผลิต',
         role_owner: 'เจ้าของสวน', multi_farm: 'สลับฟาร์ม', create_profile: 'สร้างโปรไฟล์ใหม่', setup_desc: 'ตั้งค่าข้อมูลฟาร์มของคุณให้สมบูรณ์',
-        name: 'ชื่อ', farm_name: 'ชื่อฟาร์ม', next: 'เริ่มใช้งาน', save: 'บันทึกข้อมูล', cancel: 'ยกเลิก',
+        name: 'ชื่อเจ้าของ', farm_name: 'ชื่อฟาร์ม', next: 'เริ่มใช้งาน', save: 'บันทึกข้อมูล', cancel: 'ยกเลิก',
         guest_mode: '👁️ โหมดผู้เยี่ยมชม', guest_locked: 'โหมดเยี่ยมชม ไม่สามารถปรับตั้งค่าได้', logout: 'ออกจากระบบ',
         go_to_dashboard: 'เข้าสู่ Dashboard', random_avatar: 'สุ่มรูปภาพ', bot_name: 'ชื่อหุ่นยนต์',
         need_water: 'ต้องการน้ำ', apply: 'ให้น้ำ/ปุ๋ย', apply_success: 'ดำเนินการให้น้ำ/ปุ๋ยโซน', sprinkler_on: 'เปิดสปริงเกอร์แล้ว', sprinkler_off: 'ปิดสปริงเกอร์แล้ว',
@@ -166,13 +166,17 @@
     };
 
     // --- Firebase Init (Safe Mode) ---
-    // ตรวจสอบและป้องกัน Error หน้าขาวถ้าไม่มี Config ของ Firebase
     let auth = null;
     let db = null;
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'farm-os-app';
 
     try {
-      const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+      const fallbackConfig = {
+        apiKey: "AIzaSyDs8yRihR4Vz123JRjEA6SWcF-pw77c-qU", authDomain: "m4kul-1.firebaseapp.com", projectId: "m4kul-1",
+        storageBucket: "m4kul-1.firebasestorage.app", messagingSenderId: "973526589558", appId: "1:973526589558:web:01a944e291077e240bff57"
+      };
+      const firebaseConfig = typeof __firebase_config !== 'undefined' && __firebase_config ? JSON.parse(__firebase_config) : fallbackConfig;
+      
       if (firebaseConfig && firebaseConfig.apiKey) {
         if (!firebase.apps.length) { 
           firebase.initializeApp(firebaseConfig); 
@@ -517,7 +521,7 @@
                   <div key={r.id} className="relative flex flex-col items-center group">
                     <button onClick={(e) => { e.stopPropagation(); handleDeleteBot(r.id); }} className="absolute -top-2 -right-2 bg-red-500/90 text-white w-8 h-8 rounded-full z-10 font-bold shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 hover:scale-110">✕</button>
                     <div onClick={() => setEditingBot(r)} className="w-32 h-32 rounded-[3rem] glass-panel flex items-center justify-center overflow-hidden cursor-pointer hover:border-emerald-400 hover:scale-105 transition-all"><img src={r.image} className="w-[80%] h-[80%] object-contain" /></div>
-                    <p className="mt-4 font-bold text-sm text-gray-800 dark:text-white text-center truncate">{r.name}</p>
+                    <p className="mt-4 font-bold text-sm text-gray-800 dark:text-white text-center truncate px-2">{r.name}</p>
                   </div>
                 ))}
                 <div onClick={() => setEditingBot({id:Date.now(), name:'New Bot', ip:'', status:'Standby', battery:100, image:'https://api.dicebear.com/7.x/bottts/svg?seed='+Date.now()+'&backgroundColor=transparent'})} className="w-32 h-32 rounded-[3rem] glass-card flex flex-col items-center justify-center cursor-pointer border-dashed border-2 hover:text-emerald-600 hover:border-emerald-500/50 transition-colors gap-2">
@@ -541,9 +545,12 @@
       
       const [activeRobotIndex, setActiveRobotIndex] = useState(0); 
       const [isScanning, setIsScanning] = useState(false); 
+      const [scanStatus, setScanStatus] = useState('idle');
       
       const [isAddingFarm, setIsAddingFarm] = useState(false);
       const [newFarmName, setNewFarmName] = useState('');
+      
+      const [editProfileName, setEditProfileName] = useState(userData.name);
 
       const isGuest = userData.role === 'guest';
       const profFileRef = useRef();
@@ -560,6 +567,13 @@
       ];
 
       const filteredAlerts = alertFilter === 'all' ? alerts : alerts.filter(a => a.type === alertFilter);
+
+      // --- QA Fix 2: Reset Robot Index if out of bounds ---
+      useEffect(() => {
+         if (activeRobotIndex >= robots.length) {
+            setActiveRobotIndex(Math.max(0, robots.length - 1));
+         }
+      }, [robots.length, activeRobotIndex]);
 
       // --- Interactive Handlers ---
       const handleApplyResource = (zoneId) => {
@@ -581,13 +595,15 @@
       const handleScanPlant = () => {
          if(isScanning) return;
          setIsScanning(true);
+         setScanStatus('scanning');
          showToast(t.scanning);
          setTimeout(() => {
             setIsScanning(false);
+            setScanStatus('complete');
             showToast(t.scan_complete);
             const diseases = lang === 'th' ? ['ราสนิม (Rust)', 'เพลี้ยแป้ง (Aphids)', 'ใบจุด (Leaf Spot)', 'ขาดสารอาหาร (Deficiency)'] : ['Rust', 'Aphids', 'Leaf Spot', 'Nutrient Deficiency'];
             const randomDisease = diseases[Math.floor(Math.random() * diseases.length)];
-            setAlerts(prev => [{ id: Date.now(), type: 'urgent', text: `AI ตรวจพบ: ${randomDisease}`, time: 'Just now', zone: 'Scan Res' }, ...prev]);
+            setAlerts(prev => [{ id: Date.now(), type: 'urgent', text: `AI ตรวจพบ: ${randomDisease}`, time: 'Just now', zone: 'Zone B' }, ...prev]);
          }, 2000);
       };
 
@@ -609,31 +625,50 @@
          setTimeout(() => { window.print(); showToast(t.export_pdf + ' Initiated!'); }, 500);
       };
 
+      // --- QA Fix 3: Profile Save Logic ---
       const handleSaveProfile = () => {
+         const updatedUser = { ...userData, name: editProfileName };
+         setUserData(updatedUser);
          const existingIndex = savedAccounts.findIndex(a => a.id === userData.id);
-         if (existingIndex >= 0) { const newSaved = [...savedAccounts]; newSaved[existingIndex] = userData; setSavedAccounts(newSaved); }
+         if (existingIndex >= 0) { 
+             const newSaved = [...savedAccounts]; 
+             newSaved[existingIndex] = updatedUser; 
+             setSavedAccounts(newSaved); 
+         }
          showToast("Profile Updated!");
       };
 
-      // MULTI-FARM LOGIC (Randomize state on switch)
+      // MULTI-FARM LOGIC
       const userFarms = userData.farms && userData.farms.length > 0 ? userData.farms : [{ id: 'default', name: userData.farmName }];
 
+      // --- QA Fix 4: Duplicate Farm Name Check ---
       const handleAddFarm = () => {
-         if (!newFarmName.trim()) return;
-         const newFarm = { id: 'farm_' + Date.now(), name: newFarmName };
+         const trimmedName = newFarmName.trim();
+         if (!trimmedName) return;
+         if (userFarms.find(f => f.name.toLowerCase() === trimmedName.toLowerCase())) {
+             showToast("Farm name already exists!");
+             return;
+         }
+         
+         const newFarm = { id: 'farm_' + Date.now(), name: trimmedName };
          const updatedUser = { ...userData, farms: [...userFarms, newFarm] };
-         setUserData(updatedUser); setNewFarmName(''); setIsAddingFarm(false); showToast(`Added farm: ${newFarmName}`);
+         setUserData(updatedUser); 
+         setNewFarmName(''); 
+         setIsAddingFarm(false); 
+         showToast(`Added farm: ${trimmedName}`);
          
          const existingIndex = savedAccounts.findIndex(a => a.id === userData.id);
          if (existingIndex >= 0) { const newSaved = [...savedAccounts]; newSaved[existingIndex] = updatedUser; setSavedAccounts(newSaved); }
       };
 
       const handleSwitchFarm = (farm) => {
+         if (userData.farmName === farm.name) return;
+         
          const updatedUser = { ...userData, farmName: farm.name };
          setUserData(updatedUser);
          showToast(`Loading: ${farm.name}`);
          
-         // Simulate new data load
+         // QA Fix 2 (Refined): Simulate real load by changing states entirely
          setSoilStats({ N: 40+Math.floor(Math.random()*40), P: 30+Math.floor(Math.random()*40), K: 40+Math.floor(Math.random()*40), moisture: 30+Math.floor(Math.random()*50), pH: (5.5 + Math.random()*1.5).toFixed(1) });
          setPlantZones(prev => prev.map(z => ({...z, health: 50+Math.floor(Math.random()*50), moisture: 30+Math.floor(Math.random()*60), issue: Math.random() > 0.8 ? 'Warning' : null})));
          
@@ -641,7 +676,7 @@
          if (existingIndex >= 0) { const newSaved = [...savedAccounts]; newSaved[existingIndex] = updatedUser; setSavedAccounts(newSaved); }
       };
 
-      const activeRobot = robots[activeRobotIndex] || robots[0] || null;
+      const activeRobot = robots[activeRobotIndex] || null;
 
       return (
         <div className="flex h-screen w-full overflow-hidden relative">
@@ -732,7 +767,6 @@
                      </div>
                      
                      <div className="flex-1 w-full rounded-[2.5rem] farm-pattern relative overflow-hidden bg-black/5 dark:bg-black/20 border border-white/20 p-4 md:p-8">
-                       {/* Grid for symmetric zone placement */}
                        <div className="w-full h-full grid grid-cols-2 grid-rows-2 gap-4 md:gap-6 z-10 relative">
                          {plantZones.map((z) => (
                            <div key={z.id} onClick={()=>handleApplyResource(z.id)} className={`relative rounded-[2rem] bg-gradient-to-br ${z.color} flex items-center justify-center backdrop-blur-md border border-white/40 dark:border-white/10 shadow-inner group cursor-pointer hover:scale-[1.03] transition-transform overflow-hidden`}>
@@ -746,7 +780,6 @@
                          ))}
                        </div>
 
-                       {/* Robots visually mapped safely */}
                        {robots.map((r, i) => {
                          const pos = [ { top: '30%', left: '50%' }, { top: '70%', left: '80%' }, { top: '50%', left: '20%' } ];
                          return (
@@ -767,13 +800,38 @@
                   <h2 className="text-3xl font-black text-gray-800 dark:text-white mb-6 drop-shadow-sm">{t.plant_health}</h2>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                      <div className="md:col-span-2 glass-panel p-6 rounded-[2.5rem]">
-                       <h3 className="text-lg font-bold mb-4">{t.heatmap}</h3>
+                       <h3 className="text-lg font-bold mb-4 flex justify-between items-center">
+                          {t.heatmap}
+                          {scanStatus === 'complete' && <button onClick={()=>setScanStatus('idle')} className="text-[10px] bg-white/40 dark:bg-black/40 px-3 py-1.5 rounded-xl border border-white/20 hover:bg-white/60 transition-colors">Reset Scan</button>}
+                       </h3>
                        <div className="w-full h-[300px] rounded-[1.5rem] overflow-hidden relative bg-slate-200 dark:bg-slate-800 border border-white/30">
-                          <div className="absolute inset-0 bg-gradient-to-tr from-emerald-500/40 via-yellow-400/40 to-red-500/40 mix-blend-multiply dark:mix-blend-screen filter blur-xl"></div>
-                          <div className="absolute inset-0 flex flex-col items-center justify-center font-black text-white/80 text-xl tracking-widest drop-shadow-md z-10">
-                            Drone NDVI Scan Overlay
-                            {isScanning && <div className="mt-4 text-sm bg-black/50 px-4 py-2 rounded-full animate-pulse text-emerald-400 backdrop-blur-sm border border-emerald-500/50">{t.scanning}</div>}
-                          </div>
+                          <div className={`absolute inset-0 bg-gradient-to-tr from-emerald-500/40 via-yellow-400/40 to-red-500/40 mix-blend-multiply dark:mix-blend-screen filter blur-xl transition-opacity duration-1000 ${scanStatus === 'complete' ? 'opacity-100' : 'opacity-40'}`}></div>
+                          
+                          {scanStatus === 'idle' && (
+                             <div className="absolute inset-0 flex flex-col items-center justify-center font-black text-white/80 text-xl tracking-widest drop-shadow-md z-10">
+                               Drone NDVI Scan Overlay
+                               <p className="text-[10px] font-bold tracking-normal mt-2 opacity-80 uppercase bg-black/30 px-3 py-1 rounded-full">Standby Mode</p>
+                             </div>
+                          )}
+
+                          {scanStatus === 'scanning' && (
+                             <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
+                                <div className="absolute w-full h-1 bg-emerald-400 shadow-[0_0_20px_rgba(16,185,129,1)] animate-scan left-0"></div>
+                                <div className="mt-4 text-sm bg-black/60 px-6 py-2.5 rounded-full animate-pulse text-emerald-400 backdrop-blur-sm border border-emerald-500/50 font-bold">{t.scanning}</div>
+                             </div>
+                          )}
+
+                          {scanStatus === 'complete' && (
+                             <div className="absolute inset-0 z-10 p-4 flex flex-col justify-end">
+                                <div className="absolute top-[30%] left-[20%] w-4 h-4 bg-emerald-500 rounded-full shadow-[0_0_10px_#10b981] animate-pulse"></div>
+                                <div className="absolute top-[50%] right-[30%] w-8 h-8 bg-red-500 rounded-full shadow-[0_0_15px_#ef4444] animate-bounce flex items-center justify-center text-xs">⚠️</div>
+                                <div className="glass-panel p-4 rounded-[1.5rem] w-full max-w-xs mx-auto backdrop-blur-xl border-white/50 shadow-2xl animate-toastIn bg-white/60 dark:bg-black/60">
+                                   <h4 className="font-black text-sm text-gray-900 dark:text-white flex items-center gap-2">✅ {t.scan_complete}</h4>
+                                   <p className="text-xs text-red-600 dark:text-red-400 font-bold mt-2">⚠️ High Risk in Zone B</p>
+                                   <p className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold mt-1">✓ Zone A, C, D: Healthy</p>
+                                </div>
+                             </div>
+                          )}
                        </div>
                      </div>
                      <div className="space-y-4">
@@ -782,8 +840,8 @@
                          <h4 className="font-black text-gray-800 dark:text-white">{t.disease_detect}</h4>
                          <p className="text-[10px] font-bold text-gray-500 mt-1">Click to analyze</p>
                        </div>
-                       <div onClick={handleScanPlant} className="glass-card p-6 rounded-[2.5rem] text-center cursor-pointer group border-orange-500/20 hover:bg-orange-500/10 hover:border-orange-500/50">
-                         <span className="text-5xl block mb-3 group-hover:scale-110 transition-transform">🐛</span>
+                       <div onClick={handleScanPlant} className={`glass-card p-6 rounded-[2.5rem] text-center cursor-pointer group border-orange-500/20 ${isScanning?'bg-orange-500/20':'hover:bg-orange-500/10 hover:border-orange-500/50'}`}>
+                         <span className={`text-5xl block mb-3 transition-transform ${isScanning ? 'animate-bounce' : 'group-hover:scale-110'}`}>🐛</span>
                          <h4 className="font-black text-gray-800 dark:text-white">{t.pest_detect}</h4>
                          <p className="text-[10px] font-bold text-gray-500 mt-1">Smart camera pest counting</p>
                        </div>
@@ -894,7 +952,7 @@
                 </>
               )}
 
-              {/* 5. ROBOT CONTROL (Interactive Live Cam) */}
+              {/* 5. ROBOT CONTROL */}
               {activeTab === 'robot' && (
                 <>
                    <div className="flex justify-between items-end mb-6">
@@ -902,7 +960,6 @@
                      {!isGuest && <button onClick={() => setCurrentScreen('robot_setup')} className="glass-card text-emerald-700 dark:text-emerald-300 font-bold px-4 py-2 rounded-xl text-xs hover:bg-emerald-500/10 border border-emerald-500/30">{t.manage_bots}</button>}
                    </div>
                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                     {/* Dynamic Camera Feed */}
                      <div className="lg:col-span-2 glass-panel-strong p-4 rounded-[3rem] relative h-[400px] lg:h-[500px] flex flex-col border-2 border-emerald-500/30 shadow-2xl group">
                         {activeRobot ? (
                           <>
@@ -913,7 +970,6 @@
                                 <img src="https://images.unsplash.com/photo-1592982537447-6f2a6a0a38cc?auto=format&fit=crop&q=80&w=800&h=600" className="w-full h-full object-cover opacity-50" />
                                 <img src={activeRobot.image} className="absolute bottom-10 right-10 w-40 h-40 opacity-90 drop-shadow-[0_0_20px_rgba(16,185,129,0.8)]" />
                                 <div className="absolute inset-0 border-4 border-emerald-500/20 z-0 rounded-[2.5rem]"></div>
-                                {/* HUD Overlay */}
                                 <div className="absolute top-1/2 left-1/2 w-32 h-32 border border-emerald-500/30 rounded-full transform -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
                                   <div className="w-4 h-4 border-2 border-emerald-500"></div>
                                 </div>
@@ -928,7 +984,6 @@
                         )}
                      </div>
                      
-                     {/* Selectable Robot List */}
                      <div className="space-y-4 max-h-[400px] lg:max-h-[500px] overflow-y-auto custom-scroll pr-2">
                        {robots.map((r, index) => (
                          <div key={r.id} onClick={() => {setActiveRobotIndex(index); showToast(`Connected to ${r.name}`);}} className={`glass-panel p-5 rounded-[2.5rem] flex flex-col cursor-pointer transition-all ${activeRobotIndex === index ? 'border-2 border-emerald-500 scale-[1.02] shadow-[0_0_20px_rgba(16,185,129,0.2)] bg-emerald-500/10' : 'hover:scale-[1.02] hover:bg-white/40 dark:hover:bg-slate-800/40'}`}>
@@ -983,7 +1038,7 @@
                 </div>
               )}
 
-              {/* 7. REPORTS (Functional Exports) */}
+              {/* 7. REPORTS */}
               {activeTab === 'report' && (
                 <>
                    <h2 className="text-3xl font-black mb-6 drop-shadow-sm">{t.reports}</h2>
@@ -1000,12 +1055,16 @@
                      <div className="glass-panel-strong p-8 rounded-[3rem] bg-gradient-to-br from-purple-500/10 to-blue-500/10">
                         <h3 className="font-black text-xl mb-6">{t.yield_comp}</h3>
                         <div className="space-y-6">
-                           {[{n:'Lettuce', w:'85%', g:'+12%'}, {n:'Tomato', w:'65%', g:'+5%'}, {n:'Melon', w:'40%', g:'-2%'}].map((crop, i) => (
-                             <div key={i}>
-                               <div className="flex justify-between text-xs font-black mb-2"><span>{crop.n}</span> <span className={crop.g.includes('+') ? 'text-emerald-600' : 'text-red-500'}>{crop.g}</span></div>
-                               <div className="w-full h-4 bg-white/30 dark:bg-black/30 rounded-full shadow-inner border border-white/10 overflow-hidden"><div className={`h-full rounded-full shadow-[0_0_10px_rgba(255,255,255,0.5)] ${crop.g.includes('+') ? 'bg-emerald-500' : 'bg-orange-400'}`} style={{width: crop.w}}></div></div>
-                             </div>
-                           ))}
+                           {plantZones.map((crop, i) => {
+                             const mockGrowth = [12, 5, -2, 8][i % 4];
+                             const gStr = mockGrowth >= 0 ? `+${mockGrowth}%` : `${mockGrowth}%`;
+                             return (
+                               <div key={i}>
+                                 <div className="flex justify-between text-xs font-black mb-2"><span>{crop.crop}</span> <span className={mockGrowth >= 0 ? 'text-emerald-600' : 'text-red-500'}>{gStr}</span></div>
+                                 <div className="w-full h-4 bg-white/30 dark:bg-black/30 rounded-full shadow-inner border border-white/10 overflow-hidden"><div className={`h-full rounded-full shadow-[0_0_10px_rgba(255,255,255,0.5)] ${mockGrowth >= 0 ? 'bg-emerald-500' : 'bg-orange-400'}`} style={{width: `${crop.health}%`}}></div></div>
+                               </div>
+                             );
+                           })}
                         </div>
                      </div>
                   </div>
@@ -1025,12 +1084,8 @@
                         <input type="file" ref={profFileRef} className="hidden" accept="image/*" onChange={(e)=>{ const r = new FileReader(); r.onload=(ev)=>{setUserData({...userData, avatar: ev.target.result}); showToast("Avatar changed");}; r.readAsDataURL(e.target.files[0]); }} />
                       </div>
                       <div className="flex-1 w-full space-y-4">
-                        <div><label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 ml-2 mb-1 block">{t.name}</label><input disabled={isGuest} type="text" className="w-full glass-input p-4 rounded-[1.5rem] font-black text-lg disabled:opacity-50" value={userData.name} onChange={e=>setUserData({...userData, name: e.target.value})} /></div>
-                        <div><label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 ml-2 mb-1 block">{t.farm_name}</label><input disabled={isGuest} type="text" className="w-full glass-input p-4 rounded-[1.5rem] font-black text-lg disabled:opacity-50" value={userData.farmName} onChange={e=>{
-                            const newFarmName = e.target.value;
-                            const updatedFarms = userFarms.map(f => f.name === userData.farmName ? {...f, name: newFarmName} : f);
-                            setUserData({...userData, farmName: newFarmName, farms: updatedFarms});
-                        }} /></div>
+                        <div><label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 ml-2 mb-1 block">{t.name}</label><input disabled={isGuest} type="text" className="w-full glass-input p-4 rounded-[1.5rem] font-black text-lg disabled:opacity-50" value={editProfileName} onChange={e=>setEditProfileName(e.target.value)} /></div>
+                        <div><label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 ml-2 mb-1 block">{t.farm_name}</label><input disabled={true} type="text" className="w-full glass-input p-4 rounded-[1.5rem] font-black text-lg opacity-50 bg-gray-200/50 cursor-not-allowed" value={userData.farmName} title="Change farm name by adding or switching farms below." /></div>
                       </div>
                    </div>
 
