@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Farm OS | Enterprise Complete</title>
+  <title>Farm OS | Impeccable Enterprise</title>
 
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -22,9 +22,11 @@
           animation: {
             blob: "blob 15s infinite alternate",
             scan: "scan 3s linear infinite",
-            toastIn: "toastIn 0.3s ease-out forwards",
+            toastIn: "toastIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards",
             toastOut: "toastOut 0.3s ease-in forwards",
-            rain: "rain 0.8s linear infinite"
+            rain: "rain 0.8s linear infinite",
+            float: "float 4s ease-in-out infinite",
+            slideUp: "slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards"
           },
           keyframes: {
             blob: {
@@ -38,17 +40,25 @@
               "100%": { top: "110%" },
             },
             toastIn: {
-              "0%": { opacity: 0, transform: "translateY(-20px)" },
-              "100%": { opacity: 1, transform: "translateY(0)" }
+              "0%": { opacity: 0, transform: "translateY(-30px) scale(0.9)" },
+              "100%": { opacity: 1, transform: "translateY(0) scale(1)" }
             },
             toastOut: {
-              "0%": { opacity: 1, transform: "translateY(0)" },
-              "100%": { opacity: 0, transform: "translateY(-20px)" }
+              "0%": { opacity: 1, transform: "translateY(0) scale(1)" },
+              "100%": { opacity: 0, transform: "translateY(-20px) scale(0.9)" }
             },
             rain: {
               "0%": { transform: "translateY(-5px)", opacity: 0 },
               "50%": { opacity: 1 },
               "100%": { transform: "translateY(5px)", opacity: 0 }
+            },
+            float: {
+              "0%, 100%": { transform: "translateY(0)" },
+              "50%": { transform: "translateY(-8px)" }
+            },
+            slideUp: {
+              "0%": { opacity: 0, transform: "translateY(20px)" },
+              "100%": { opacity: 1, transform: "translateY(0)" }
             }
           }
         }
@@ -59,46 +69,82 @@
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   
   <style>
-    body { font-family: 'Prompt', sans-serif; -webkit-tap-highlight-color: transparent; background-color: #f1f5f9; color: #1e293b; }
+    body { font-family: 'Prompt', sans-serif; -webkit-tap-highlight-color: transparent; background-color: #f1f5f9; color: #0f172a; }
     .dark body { background-color: #020617; color: #f8fafc; }
     .hide-scrollbar::-webkit-scrollbar { display: none; }
     .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    .modal-enter { animation: modalFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.97) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
     
-    /* LIQUID GLASS UI */
-    .glass-panel { background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.6); box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05); }
-    .dark .glass-panel { background: rgba(30, 41, 59, 0.45); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3); }
-    .glass-panel-strong { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px); border: 1px solid rgba(255, 255, 255, 0.8); box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07); }
-    .dark .glass-panel-strong { background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(255, 255, 255, 0.15); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4); }
-    .glass-card { background: rgba(255, 255, 255, 0.3); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.5); transition: all 0.3s ease; }
-    .glass-card:hover { background: rgba(255, 255, 255, 0.5); border-color: rgba(255, 255, 255, 0.9); transform: translateY(-2px); box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1); }
-    .dark .glass-card { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.08); }
-    .dark .glass-card:hover { background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.25); box-shadow: 0 10px 40px -10px rgba(0,0,0,0.4); }
-    .glass-input { background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(4px); border: 1px solid rgba(255, 255, 255, 0.6); transition: all 0.2s; }
-    .glass-input:focus { background: rgba(255, 255, 255, 0.8); border-color: #10b981; outline: none; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); }
-    .dark .glass-input { background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1); color: white; }
-    .dark .glass-input:focus { background: rgba(0, 0, 0, 0.5); border-color: #10b981; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3); }
+    .modal-enter { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    
+    /* NORMALIZED & BOLDER LIQUID GLASS UI */
+    .glass-panel { 
+      background: rgba(255, 255, 255, 0.6); 
+      backdrop-filter: blur(28px); 
+      -webkit-backdrop-filter: blur(28px); 
+      border: 1px solid rgba(255, 255, 255, 0.8); 
+      box-shadow: 0 10px 40px -10px rgba(31, 38, 135, 0.08); 
+    }
+    .dark .glass-panel { 
+      background: rgba(30, 41, 59, 0.55); 
+      border: 1px solid rgba(255, 255, 255, 0.15); 
+      box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.4); 
+    }
 
-    .farm-pattern { background-color: rgba(255, 255, 255, 0.1); background-image: linear-gradient(rgba(255,255,255,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.3) 1px, transparent 1px); background-size: 40px 40px; }
-    .dark .farm-pattern { background-color: rgba(0, 0, 0, 0.2); background-image: linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px); }
-    .gradient-text { background: linear-gradient(135deg, #059669, #34d399); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .glass-panel-strong { 
+      background: rgba(255, 255, 255, 0.8); 
+      backdrop-filter: blur(32px); 
+      -webkit-backdrop-filter: blur(32px); 
+      border: 1px solid rgba(255, 255, 255, 0.95); 
+      box-shadow: 0 12px 50px -12px rgba(31, 38, 135, 0.15); 
+    }
+    .dark .glass-panel-strong { 
+      background: rgba(15, 23, 42, 0.85); 
+      border: 1px solid rgba(255, 255, 255, 0.2); 
+      box-shadow: 0 12px 50px -12px rgba(0, 0, 0, 0.5); 
+    }
+
+    .glass-card { 
+      background: rgba(255, 255, 255, 0.45); 
+      backdrop-filter: blur(20px); 
+      border: 1px solid rgba(255, 255, 255, 0.7); 
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
+    }
+    .glass-card:hover { 
+      background: rgba(255, 255, 255, 0.75); 
+      border-color: rgba(255, 255, 255, 1); 
+      transform: translateY(-3px); 
+      box-shadow: 0 15px 35px -10px rgba(0,0,0,0.12); 
+    }
+    .dark .glass-card { background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); }
+    .dark .glass-card:hover { background: rgba(255, 255, 255, 0.15); border-color: rgba(255, 255, 255, 0.3); box-shadow: 0 15px 35px -10px rgba(0,0,0,0.5); }
+
+    .glass-input { background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.8); transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); }
+    .glass-input:focus { background: rgba(255, 255, 255, 0.95); border-color: #10b981; outline: none; box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.25); }
+    .dark .glass-input { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.15); color: white; }
+    .dark .glass-input:focus { background: rgba(0, 0, 0, 0.6); border-color: #10b981; box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.4); }
+
+    .farm-pattern { background-color: rgba(255, 255, 255, 0.15); background-image: linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px); background-size: 48px 48px; }
+    .dark .farm-pattern { background-color: rgba(0, 0, 0, 0.25); background-image: linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px); }
+    
+    .gradient-text { background: linear-gradient(135deg, #059669, #10b981); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
     .dark .gradient-text { background: linear-gradient(135deg, #34d399, #6ee7b7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    input[type="range"] { accent-color: #10b981; background: rgba(255,255,255,0.3); border: 1px solid rgba(255,255,255,0.2); }
-    .dark input[type="range"] { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); }
+    
+    input[type="range"] { accent-color: #10b981; background: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.3); }
+    .dark input[type="range"] { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); }
     input[type="range"]:disabled { opacity: 0.5; cursor: not-allowed; }
+    
     .custom-scroll::-webkit-scrollbar { width: 6px; }
     .custom-scroll::-webkit-scrollbar-track { background: transparent; }
-    .custom-scroll::-webkit-scrollbar-thumb { background: rgba(16, 185, 129, 0.3); border-radius: 10px; }
-    .custom-scroll::-webkit-scrollbar-thumb:hover { background: rgba(16, 185, 129, 0.6); }
+    .custom-scroll::-webkit-scrollbar-thumb { background: rgba(16, 185, 129, 0.4); border-radius: 10px; }
+    .custom-scroll::-webkit-scrollbar-thumb:hover { background: rgba(16, 185, 129, 0.7); }
 
     @media print {
       body * { visibility: hidden; }
       #printable-area, #printable-area * { visibility: visible; }
       #printable-area { position: absolute; left: 0; top: 0; width: 100%; }
-      aside, .lg\:hidden, #top-controls, .glass-card button { display: none !important; }
-      .glass-panel, .glass-panel-strong { box-shadow: none !important; border: 1px solid #ddd !important; background: white !important; filter: none !important; }
-      .dark .glass-panel, .dark .glass-panel-strong { background: black !important; color: white !important;}
+      aside, .lg\:hidden, #top-controls, .glass-card button, .fixed { display: none !important; }
+      .glass-panel, .glass-panel-strong { box-shadow: none !important; border: 1px solid #e2e8f0 !important; background: white !important; filter: none !important; }
+      .dark .glass-panel, .dark .glass-panel-strong { background: black !important; color: white !important; border-color: #334155 !important;}
     }
   </style>
 
@@ -111,7 +157,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 </head>
-<body class="overflow-x-hidden antialiased transition-colors duration-500 selection:bg-emerald-200 selection:text-emerald-900 min-h-screen">
+<body class="overflow-x-hidden antialiased transition-colors duration-500 selection:bg-emerald-200 selection:text-emerald-900 min-h-screen font-medium">
   <div id="root"></div>
 
   <script type="text/babel">
@@ -139,7 +185,8 @@
         guest_mode: '👁️ โหมดผู้เยี่ยมชม', guest_locked: 'โหมดเยี่ยมชม ไม่สามารถปรับตั้งค่าได้', logout: 'ออกจากระบบ',
         go_to_dashboard: 'เข้าสู่ Dashboard', random_avatar: 'สุ่มรูปภาพ', bot_name: 'ชื่อหุ่นยนต์',
         need_water: 'ต้องการน้ำ', apply: 'ให้น้ำ/ปุ๋ย', apply_success: 'ดำเนินการให้น้ำ/ปุ๋ยโซน', sprinkler_on: 'เปิดสปริงเกอร์แล้ว', sprinkler_off: 'ปิดสปริงเกอร์แล้ว',
-        scanning: 'กำลังวิเคราะห์ภาพ...', scan_complete: 'วิเคราะห์เสร็จสิ้น'
+        scanning: 'กำลังวิเคราะห์ภาพ...', scan_complete: 'วิเคราะห์เสร็จสิ้น',
+        edit_zones: 'แก้ไขโซน', zone_name: 'ชื่อโซน', zone_emoji: 'อิโมจิ'
       },
       en: {
         app_name: 'Farm OS', smart_eco: 'Smart Ecosystem', login: 'Sign In', platform_desc: 'Your Farm Operating System',
@@ -161,7 +208,8 @@
         guest_mode: '👁️ Guest Mode', guest_locked: 'Guest Mode. Settings locked.', logout: 'Logout',
         go_to_dashboard: 'Enter Dashboard', random_avatar: 'Random Image', bot_name: 'Robot Name',
         need_water: 'Need Water', apply: 'Apply', apply_success: 'Resources applied to Zone ', sprinkler_on: 'Sprinklers Activated', sprinkler_off: 'Sprinklers Deactivated',
-        scanning: 'Analyzing Image...', scan_complete: 'Analysis complete.'
+        scanning: 'Analyzing Image...', scan_complete: 'Analysis complete.',
+        edit_zones: 'Edit Zones', zone_name: 'Zone Name', zone_emoji: 'Emoji'
       }
     };
 
@@ -178,38 +226,31 @@
       const firebaseConfig = typeof __firebase_config !== 'undefined' && __firebase_config ? JSON.parse(__firebase_config) : fallbackConfig;
       
       if (firebaseConfig && firebaseConfig.apiKey) {
-        if (!firebase.apps.length) { 
-          firebase.initializeApp(firebaseConfig); 
-        }
-        auth = firebase.auth();
-        db = firebase.firestore();
-      } else {
-        console.warn("Running in Local Mode (No Firebase Config). Auth and DB will use LocalStorage.");
-      }
-    } catch(err) {
-      console.error("Firebase setup skipped:", err);
-    }
+        if (!firebase.apps.length) { firebase.initializeApp(firebaseConfig); }
+        auth = firebase.auth(); db = firebase.firestore();
+      } else { console.warn("Running in Local Mode."); }
+    } catch(err) { console.error("Firebase setup skipped:", err); }
     
     // --- Icons ---
     const Icons = {
-      Overview: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>,
-      Plant: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>,
-      Soil: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>,
-      Resource: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>,
-      Robot: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>,
-      Alert: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>,
-      Report: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>,
-      User: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+      Overview: <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>,
+      Plant: <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>,
+      Soil: <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>,
+      Resource: <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>,
+      Robot: <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>,
+      Alert: <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>,
+      Report: <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>,
+      User: <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
     };
 
-    const AppLogo = ({ className }) => <img src="LOGO (2).png" alt="Farm OS Logo" className={`${className} object-contain filter drop-shadow-md`} onError={(e) => { e.target.onerror = null; e.target.src = "https://lh3.googleusercontent.com/d/1Idx_06TR21D44uHQjWC1arrQM0hD4LZ8"; }} />;
+    const AppLogo = ({ className }) => <img src="LOGO (2).png" alt="Farm OS Logo" className={`${className} object-contain filter drop-shadow-xl`} onError={(e) => { e.target.onerror = null; e.target.src = "https://lh3.googleusercontent.com/d/1Idx_06TR21D44uHQjWC1arrQM0hD4LZ8"; }} />;
 
     const LiquidBackground = () => (
-      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute -top-[10%] -left-[10%] w-[60vw] h-[60vw] rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-[100px] opacity-70 animate-blob bg-emerald-400 dark:bg-emerald-900/60"></div>
-        <div className="absolute top-[20%] -right-[10%] w-[50vw] h-[50vw] rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-[120px] opacity-50 animate-blob animation-delay-[2s] bg-blue-300 dark:bg-blue-900/60"></div>
-        <div className="absolute -bottom-[20%] left-[20%] w-[70vw] h-[70vw] rounded-full mix-blend-multiply dark:mix-blend-lighten filter blur-[120px] opacity-40 animate-blob animation-delay-[4s] bg-amber-200 dark:bg-amber-900/40"></div>
-        <div className="absolute inset-0 bg-white/30 dark:bg-black/40 backdrop-blur-[2px]"></div>
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0 bg-slate-50 dark:bg-slate-900 transition-colors duration-500">
+        <div className="absolute -top-[10%] -left-[10%] w-[65vw] h-[65vw] rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[120px] opacity-60 animate-blob bg-emerald-300 dark:bg-emerald-900/80"></div>
+        <div className="absolute top-[20%] -right-[10%] w-[55vw] h-[55vw] rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[140px] opacity-50 animate-blob animation-delay-[2s] bg-sky-300 dark:bg-sky-900/60"></div>
+        <div className="absolute -bottom-[20%] left-[20%] w-[75vw] h-[75vw] rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[140px] opacity-40 animate-blob animation-delay-[4s] bg-amber-200 dark:bg-amber-900/40"></div>
+        <div className="absolute inset-0 bg-white/30 dark:bg-black/50 backdrop-blur-[8px]"></div>
       </div>
     );
 
@@ -218,31 +259,32 @@
       const points = data.map((val, i) => `${(i / (data.length - 1)) * 100},${100 - ((val - min) / range) * 80 + 10}`).join(' ');
       return (
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full overflow-visible">
-          <polyline points={points} fill="none" stroke={color} strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" style={{ filter: `drop-shadow(0px 4px 6px ${color}80)` }} />
+          <polyline points={points} fill="none" stroke={color} strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" style={{ filter: `drop-shadow(0px 8px 10px ${color}80)` }} className="transition-all duration-500" />
         </svg>
       );
     };
 
-    // --- Interactive Toast System ---
     const Toast = ({ message, onClose }) => {
-      useEffect(() => { const timer = setTimeout(onClose, 3000); return () => clearTimeout(timer); }, [message]);
+      useEffect(() => { const timer = setTimeout(onClose, 3500); return () => clearTimeout(timer); }, [message]);
       if (!message) return null;
       return (
-        <div className="fixed top-6 left-1/2 transform -translate-x-1/2 z-[999] animate-toastIn">
-          <div className="bg-gray-900/90 dark:bg-emerald-800/90 text-white backdrop-blur-md px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 font-bold text-sm border border-white/20">
-            <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            {message}
+        <div className="fixed top-10 md:top-8 left-0 right-0 z-[999] flex justify-center pointer-events-none px-4">
+          <div className="animate-toastIn bg-slate-900/95 dark:bg-emerald-900/95 text-white backdrop-blur-2xl px-6 py-3.5 rounded-full shadow-[0_15px_40px_rgba(0,0,0,0.3)] flex items-center gap-3 font-bold text-sm border border-white/10 pointer-events-auto max-w-sm w-full md:max-w-md">
+            <div className="bg-emerald-500/20 p-1.5 rounded-full">
+              <svg className="w-4 h-4 shrink-0 text-emerald-400 drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <span className="truncate tracking-wide flex-1">{message}</span>
           </div>
         </div>
       );
     };
 
     const TopControls = ({ lang, setLang, isDarkMode, setIsDarkMode }) => (
-       <div id="top-controls" className="absolute top-4 right-4 z-[100] flex gap-2">
-         <button onClick={() => setLang(lang === 'th' ? 'en' : 'th')} className="glass-panel px-4 py-2 rounded-full text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:bg-white/80 dark:hover:bg-slate-700/80 transition-all">{lang === 'th' ? 'EN' : 'TH'}</button>
-         <button onClick={() => setIsDarkMode(!isDarkMode)} className="glass-panel p-2 rounded-full text-gray-700 dark:text-yellow-400 hover:bg-white/80 dark:hover:bg-slate-700/80 transition-all">
-            {isDarkMode ? <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg> 
-                        : <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>}
+       <div id="top-controls" className="absolute top-5 md:top-8 right-5 md:right-10 z-[100] flex gap-3">
+         <button onClick={() => setLang(lang === 'th' ? 'en' : 'th')} className="glass-panel px-5 py-2.5 rounded-[1rem] text-xs font-black text-gray-800 dark:text-white hover:bg-white/80 dark:hover:bg-slate-800/80 transition-all duration-300 uppercase tracking-[0.2em] shadow-md hover:-translate-y-0.5">{lang === 'th' ? 'EN' : 'TH'}</button>
+         <button onClick={() => setIsDarkMode(!isDarkMode)} className="glass-panel p-2.5 rounded-[1rem] text-gray-800 dark:text-yellow-400 hover:bg-white/80 dark:hover:bg-slate-800/80 transition-all duration-300 shadow-md hover:-translate-y-0.5">
+            {isDarkMode ? <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg> 
+                        : <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>}
          </button>
        </div>
     );
@@ -276,10 +318,10 @@
         { id: 3, name: 'FarmBot-Delta', ip: '192.168.1.103', status: 'Standby', battery: 95, image: 'https://api.dicebear.com/7.x/bottts/svg?seed=Delta&backgroundColor=transparent' }
       ]);
       const [plantZones, setPlantZones] = useState([
-        { id: 'A', crop: 'Lettuce', health: 95, moisture: 45, issue: null, color: 'from-emerald-400/50 to-emerald-300/50' },
-        { id: 'B', crop: 'Tomato', health: 65, moisture: 30, issue: 'Fungus', color: 'from-red-400/50 to-orange-300/50' },
-        { id: 'C', crop: 'Melon', health: 88, moisture: 42, issue: null, color: 'from-yellow-400/50 to-orange-300/50' },
-        { id: 'D', crop: 'Strawberry', health: 75, moisture: 38, issue: 'Aphids', color: 'from-pink-400/50 to-rose-300/50' }
+        { id: 'A', name: 'Zone A (Lettuce)', emoji: '🥬', health: 95, moisture: 45, issue: null, color: 'from-emerald-400/60 to-emerald-300/60' },
+        { id: 'B', name: 'Zone B (Tomato)', emoji: '🍅', health: 65, moisture: 30, issue: 'Fungus', color: 'from-red-400/60 to-orange-300/60' },
+        { id: 'C', name: 'Zone C (Melon)', emoji: '🍈', health: 88, moisture: 42, issue: null, color: 'from-yellow-400/60 to-orange-300/60' },
+        { id: 'D', name: 'Zone D (Strawberry)', emoji: '🍓', health: 75, moisture: 38, issue: 'Aphids', color: 'from-pink-400/60 to-rose-300/60' }
       ]);
       const [soilStats, setSoilStats] = useState({ N: 65, P: 40, K: 55, moisture: 45, pH: 6.2 });
       const [alerts, setAlerts] = useState([
@@ -290,7 +332,6 @@
       
       const [autoSprinklerOn, setAutoSprinklerOn] = useState(false);
 
-      // Firebase Sync
       useEffect(() => {
         if (userData.role !== 'guest' && userData.id) {
           if (userData.isGoogleAuth && auth && auth.currentUser) {
@@ -346,13 +387,13 @@
 
     // --- SCREENS (Auth & Setup) ---
     const SplashScreen = ({ onFinish, t }) => {
-      useEffect(() => { const timer = setTimeout(onFinish, 1500); return () => clearTimeout(timer); }, []);
+      useEffect(() => { const timer = setTimeout(onFinish, 1800); return () => clearTimeout(timer); }, []);
       return (
-        <div className="flex w-full items-center justify-center min-h-screen">
-          <div className="flex flex-col items-center animate-in fade-in zoom-in duration-1000 glass-panel p-12 rounded-[3rem]">
-            <AppLogo className="w-40 h-40 drop-shadow-2xl mb-6 hover:scale-105 transition-transform" />
-            <h1 className="text-5xl font-black gradient-text tracking-tight mb-2">{t.app_name}</h1>
-            <p className="text-emerald-700 dark:text-emerald-300 font-bold text-sm uppercase tracking-widest">{t.platform_desc}</p>
+        <div className="flex w-full items-center justify-center min-h-screen p-4">
+          <div className="flex flex-col items-center animate-in duration-1000 glass-panel-strong p-12 md:p-20 rounded-[3rem] shadow-[0_20px_60px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_60px_rgba(0,0,0,0.4)]">
+            <AppLogo className="w-40 h-40 md:w-52 md:h-52 drop-shadow-2xl mb-8" />
+            <h1 className="text-5xl md:text-7xl font-black gradient-text tracking-tighter mb-4 drop-shadow-sm">{t.app_name}</h1>
+            <p className="text-emerald-700 dark:text-emerald-400 font-bold text-xs md:text-sm uppercase tracking-[0.3em]">{t.platform_desc}</p>
           </div>
         </div>
       );
@@ -392,44 +433,44 @@
       return (
         <div className="flex flex-col items-center justify-center min-h-screen w-full p-4 relative">
           <TopControls lang={lang} setLang={setLang} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
-          <div className="w-full max-w-md glass-panel p-8 md:p-12 rounded-[3rem] relative z-10 modal-enter">
-            <div className="text-center mb-8">
-              <div className="inline-block p-4 bg-white/40 dark:bg-black/20 rounded-3xl shadow-inner mb-4"><AppLogo className="w-16 h-16" /></div>
-              <h2 className="text-3xl font-black text-gray-800 dark:text-white">{t.login}</h2>
+          <div className="w-full max-w-[420px] glass-panel-strong p-8 md:p-12 rounded-[2.5rem] relative z-10 modal-enter shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+            <div className="text-center mb-10">
+              <div className="inline-block p-5 bg-white/60 dark:bg-black/40 rounded-[2rem] shadow-inner mb-6 border border-white/50"><AppLogo className="w-16 h-16" /></div>
+              <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white tracking-tight drop-shadow-md">{t.login}</h2>
             </div>
-            <div className="space-y-4 w-full">
+            <div className="space-y-5 w-full">
               {savedAccounts.length > 0 && (
-                <div className="mb-6 w-full text-left">
-                   <p className="text-[10px] font-bold text-gray-600 dark:text-gray-400 uppercase tracking-widest mb-3 pl-2">{t.saved_accounts}</p>
-                   <div className="space-y-2 max-h-[220px] overflow-y-auto custom-scroll p-1">
+                <div className="mb-8 w-full text-left">
+                   <p className="text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-[0.2em] mb-4 pl-2">{t.saved_accounts}</p>
+                   <div className="space-y-3 max-h-[240px] overflow-y-auto custom-scroll pr-2">
                      {savedAccounts.map(acc => (
-                       <div key={acc.id} onClick={() => {setUserData({...acc, farms: acc.farms || [{id:'default', name:acc.farmName}]}); showToast(`Welcome back!`); onLoginDirect();}} className="glass-card flex items-center gap-3 p-3 rounded-[2rem] cursor-pointer group relative">
-                          <img src={acc.avatar} className="w-12 h-12 rounded-full object-cover border-2 border-white/50 bg-white/40" />
+                       <div key={acc.id} onClick={() => {setUserData({...acc, farms: acc.farms || [{id:'default', name:acc.farmName}]}); showToast(`Welcome back!`); onLoginDirect();}} className="glass-card flex items-center gap-4 p-4 rounded-[1.5rem] cursor-pointer group relative overflow-hidden shadow-sm">
+                          <img src={acc.avatar} className="w-12 h-12 rounded-[1rem] object-cover border-2 border-white/60 bg-white/60 shadow-sm" />
                           <div className="flex-1 overflow-hidden">
-                            <p className="text-sm font-bold text-gray-800 dark:text-white truncate">{acc.name}</p>
-                            <p className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold truncate">{acc.farmName}</p>
+                            <p className="text-base font-black text-gray-900 dark:text-white truncate tracking-tight">{acc.name}</p>
+                            <p className="text-xs text-emerald-700 dark:text-emerald-400 font-bold truncate">{acc.farmName}</p>
                           </div>
-                          <button onClick={(e) => removeAccount(e, acc.id)} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-500/20 rounded-xl transition-colors md:opacity-0 md:group-hover:opacity-100 z-20">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                          <button onClick={(e) => removeAccount(e, acc.id)} className="p-2.5 text-gray-400 hover:text-white hover:bg-red-500 rounded-xl transition-all duration-300 md:opacity-0 md:group-hover:opacity-100 z-20 shadow-sm">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
                           </button>
                        </div>
                      ))}
                    </div>
                 </div>
               )}
-              <button onClick={handleGoogleLogin} disabled={isLoading} className="w-full glass-card text-gray-800 dark:text-white py-3.5 rounded-[2rem] font-bold hover:bg-white/50 flex items-center justify-center gap-3 transition-all">
-                <svg className="w-5 h-5 drop-shadow-sm" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/><path fill="none" d="M1 1h22v22H1z"/></svg>
+              <button onClick={handleGoogleLogin} disabled={isLoading} className="w-full glass-card text-gray-900 dark:text-white py-4 rounded-[1.5rem] font-black hover:bg-white/70 flex items-center justify-center gap-3 transition-transform duration-300 hover:-translate-y-1 shadow-md">
+                <svg className="w-6 h-6 drop-shadow-sm" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/><path fill="none" d="M1 1h22v22H1z"/></svg>
                 {isLoading ? t.connecting : t.login_google}
               </button>
-              <button onClick={createRandomProfile} className="w-full bg-emerald-500/80 backdrop-blur-md text-white py-3.5 rounded-[2rem] font-bold shadow-lg flex items-center justify-center gap-2 border border-emerald-400/50 hover:bg-emerald-500">
+              <button onClick={createRandomProfile} className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 text-white py-4 rounded-[1.5rem] font-black shadow-[0_10px_30px_rgba(16,185,129,0.3)] flex items-center justify-center gap-3 border border-emerald-400/50 hover:brightness-110 transition-all duration-300 hover:-translate-y-1">
                  {t.random_profile}
               </button>
-              <div className="relative flex items-center py-2"><div className="flex-grow border-t border-white/40"></div><span className="mx-4 text-gray-500 text-[10px] uppercase tracking-widest">{t.or_choice}</span><div className="flex-grow border-t border-white/40"></div></div>
-              <button onClick={onGuest} className="w-full glass-card text-gray-700 dark:text-gray-300 py-3.5 rounded-[2rem] font-bold flex items-center justify-center gap-2 border-dashed border-2 hover:bg-white/40">
+              <div className="relative flex items-center py-2"><div className="flex-grow border-t border-white/50 dark:border-white/20"></div><span className="mx-4 text-gray-500 font-black text-[10px] uppercase tracking-[0.2em]">{t.or_choice}</span><div className="flex-grow border-t border-white/50 dark:border-white/20"></div></div>
+              <button onClick={onGuest} className="w-full glass-card text-gray-700 dark:text-gray-300 py-4 rounded-[1.5rem] font-black flex items-center justify-center gap-2 border-dashed border-2 hover:bg-white/60 transition-all duration-300 hover:-translate-y-1 shadow-sm">
                  {t.guest_login}
               </button>
             </div>
-            {errorMsg && <div className="mt-4 p-3 bg-red-500/20 text-red-700 text-sm text-center rounded-xl animate-pulse">{errorMsg}</div>}
+            {errorMsg && <div className="mt-6 p-4 bg-red-500/20 border border-red-500/40 text-red-800 dark:text-red-300 font-bold text-sm text-center rounded-[1.5rem] animate-pulse shadow-inner">{errorMsg}</div>}
           </div>
         </div>
       );
@@ -447,19 +488,19 @@
       return (
         <div className="flex flex-col items-center justify-center min-h-screen w-full p-4 relative">
           <TopControls lang={lang} setLang={setLang} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
-          <div className="w-full max-w-md glass-panel p-8 md:p-12 rounded-[3rem] modal-enter">
-            <h2 className="text-3xl font-black text-gray-800 dark:text-white mb-2 text-center">{t.create_profile}</h2>
-            <div className="relative w-28 h-28 mx-auto mb-8 cursor-pointer group" onClick={() => fileRef.current.click()}>
-              <div className="absolute inset-0 rounded-full bg-white/40 dark:bg-black/40 backdrop-blur-sm border-2 border-emerald-400/50 shadow-inner group-hover:scale-105 transition-all"></div>
-              <img src={userData.avatar} className="w-full h-full rounded-full object-cover p-2 relative z-10" />
-              <div className="absolute bottom-0 right-0 z-20 bg-emerald-500/90 text-white p-2.5 rounded-full shadow-lg hover:scale-110">📸</div>
+          <div className="w-full max-w-md glass-panel-strong p-8 md:p-12 rounded-[2.5rem] modal-enter shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+            <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-8 text-center tracking-tight">{t.create_profile}</h2>
+            <div className="relative w-32 h-32 mx-auto mb-10 cursor-pointer group" onClick={() => fileRef.current.click()}>
+              <div className="absolute inset-0 rounded-[2rem] bg-white/50 dark:bg-black/40 backdrop-blur-md border-2 border-emerald-400/50 shadow-inner group-hover:scale-105 transition-transform duration-300"></div>
+              <img src={userData.avatar} className="w-full h-full rounded-[2rem] object-cover p-2.5 relative z-10" />
+              <div className="absolute -bottom-2 -right-2 z-20 bg-emerald-500 text-white p-3 rounded-xl shadow-[0_5px_15px_rgba(16,185,129,0.5)] group-hover:scale-110 transition-transform duration-300"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path></svg></div>
               <input type="file" ref={fileRef} className="hidden" accept="image/*" onChange={(e)=>{ const r = new FileReader(); r.onload=(ev)=>setUserData({...userData, avatar: ev.target.result}); r.readAsDataURL(e.target.files[0]); }} />
             </div>
-            <div className="space-y-4">
-              <div><label className="text-xs font-bold text-gray-700 dark:text-gray-300 ml-2 mb-1 block">{t.name}</label><input type="text" className="w-full glass-input p-4 rounded-2xl text-gray-800 dark:text-white font-bold" value={userData.name} onChange={e => setUserData({...userData, name: e.target.value})} /></div>
-              <div><label className="text-xs font-bold text-gray-700 dark:text-gray-300 ml-2 mb-1 block">{t.farm_name}</label><input type="text" className="w-full glass-input p-4 rounded-2xl text-gray-800 dark:text-white font-bold" value={userData.farmName} onChange={e => setUserData({...userData, farmName: e.target.value})} /></div>
+            <div className="space-y-5">
+              <div><label className="text-[10px] font-black tracking-[0.2em] uppercase text-gray-500 dark:text-gray-400 ml-2 mb-1.5 block">{t.name}</label><input type="text" className="w-full glass-input p-4 rounded-[1.5rem] text-gray-900 dark:text-white font-black text-lg shadow-inner" value={userData.name} onChange={e => setUserData({...userData, name: e.target.value})} /></div>
+              <div><label className="text-[10px] font-black tracking-[0.2em] uppercase text-gray-500 dark:text-gray-400 ml-2 mb-1.5 block">{t.farm_name}</label><input type="text" className="w-full glass-input p-4 rounded-[1.5rem] text-gray-900 dark:text-white font-black text-lg shadow-inner" value={userData.farmName} onChange={e => setUserData({...userData, farmName: e.target.value})} /></div>
             </div>
-            <button onClick={handleSaveAndNext} className="w-full mt-10 bg-gradient-to-r from-emerald-500/90 to-teal-500/90 backdrop-blur-md text-white py-4 rounded-[2rem] font-bold shadow-lg hover:-translate-y-1 transition-transform">{t.next}</button>
+            <button onClick={handleSaveAndNext} className="w-full mt-10 bg-emerald-500 text-white py-4 rounded-[1.5rem] font-black text-lg shadow-[0_10px_30px_rgba(16,185,129,0.3)] hover:-translate-y-1 transition-transform duration-300 border border-emerald-400/50">{t.next}</button>
           </div>
         </div>
       );
@@ -497,39 +538,40 @@
         <div className="flex flex-col items-center justify-center min-h-screen w-full p-4 relative">
           <TopControls lang={lang} setLang={setLang} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
           {editingBot ? (
-            <div className="glass-panel p-8 rounded-[3rem] w-full max-w-sm modal-enter shadow-2xl">
-              <h2 className="text-2xl font-black text-gray-800 dark:text-white mb-8 text-center">{t.setup_bot}</h2>
-              <div className="relative w-32 h-32 mx-auto mb-8 cursor-pointer group" onClick={() => botFileRef.current.click()}>
-                 <div className="absolute inset-0 bg-white/40 dark:bg-black/40 backdrop-blur-sm rounded-[2rem] border border-white/50 shadow-inner group-hover:scale-105 transition-transform"></div>
-                 <img src={editingBot.image} className="w-full h-full rounded-[2rem] object-contain p-2 relative z-10" />
+            <div className="glass-panel-strong p-8 md:p-12 rounded-[2.5rem] w-full max-w-md modal-enter shadow-2xl">
+              <h2 className="text-3xl font-black text-gray-900 dark:text-white mb-8 text-center tracking-tight">{t.setup_bot}</h2>
+              <div className="relative w-36 h-36 mx-auto mb-10 cursor-pointer group" onClick={() => botFileRef.current.click()}>
+                 <div className="absolute inset-0 bg-white/50 dark:bg-black/40 backdrop-blur-md rounded-[2rem] border-2 border-emerald-400/50 shadow-inner group-hover:scale-105 transition-transform duration-300"></div>
+                 <img src={editingBot.image} className="w-full h-full rounded-[2rem] object-contain p-3 relative z-10" />
                  <input type="file" ref={botFileRef} className="hidden" accept="image/*" onChange={(e)=>{ const r = new FileReader(); r.onload=(ev)=>setEditingBot({...editingBot, image: ev.target.result}); r.readAsDataURL(e.target.files[0]); }} />
+                 <div className="absolute -bottom-2 -right-2 z-20 bg-emerald-500 text-white p-3 rounded-xl shadow-[0_5px_15px_rgba(16,185,129,0.5)] group-hover:scale-110 transition-transform"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></div>
               </div>
-              <div className="space-y-4 mb-8">
-                <div><label className="text-xs font-bold text-gray-700 dark:text-gray-300 ml-2 mb-1 block">{t.bot_name}</label><input type="text" className="w-full glass-input p-4 rounded-2xl text-gray-800 dark:text-white font-bold" value={editingBot.name} onChange={e=>setEditingBot({...editingBot, name: e.target.value})} /></div>
+              <div className="space-y-4 mb-10">
+                <div><label className="text-[10px] font-black tracking-[0.2em] uppercase text-gray-500 dark:text-gray-400 ml-2 mb-1.5 block">{t.bot_name}</label><input type="text" className="w-full glass-input p-4 rounded-[1.5rem] text-gray-900 dark:text-white font-black text-lg shadow-inner" value={editingBot.name} onChange={e=>setEditingBot({...editingBot, name: e.target.value})} /></div>
               </div>
-              <div className="flex gap-3">
-                <button onClick={() => setEditingBot(null)} className="flex-1 glass-card py-3.5 rounded-2xl font-bold hover:bg-white/50">{t.cancel}</button>
-                <button onClick={handleSaveBot} className="flex-1 bg-emerald-500/90 text-white py-3.5 rounded-2xl font-bold shadow-lg border border-emerald-400/50 hover:bg-emerald-500">{t.save}</button>
+              <div className="flex gap-4">
+                <button onClick={() => setEditingBot(null)} className="flex-1 glass-card py-4 rounded-[1.5rem] font-black hover:bg-white/60 transition-colors">{t.cancel}</button>
+                <button onClick={handleSaveBot} className="flex-1 bg-emerald-500 text-white py-4 rounded-[1.5rem] font-black shadow-[0_8px_30px_rgba(16,185,129,0.3)] border border-emerald-400/50 hover:-translate-y-1 transition-transform">{t.save}</button>
               </div>
             </div>
           ) : (
             <div className="w-full max-w-4xl flex flex-col items-center z-10 modal-enter">
-              <h1 className="text-4xl font-black text-gray-800 dark:text-white mb-2 text-center">Fleet Init</h1>
-              <p className="text-gray-600 dark:text-gray-300 text-sm font-bold mb-12 text-center">{t.manage_bots}</p>
+              <h1 className="text-5xl md:text-6xl font-black text-gray-900 dark:text-white mb-4 text-center tracking-tight drop-shadow-md">Fleet Init</h1>
+              <p className="text-gray-600 dark:text-gray-300 text-base font-black tracking-widest uppercase mb-12 text-center">{t.manage_bots}</p>
               <div className="flex flex-wrap justify-center gap-6 md:gap-8 w-full">
                 {robots.map(r => (
                   <div key={r.id} className="relative flex flex-col items-center group">
-                    <button onClick={(e) => { e.stopPropagation(); handleDeleteBot(r.id); }} className="absolute -top-2 -right-2 bg-red-500/90 text-white w-8 h-8 rounded-full z-10 font-bold shadow-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 hover:scale-110">✕</button>
-                    <div onClick={() => setEditingBot(r)} className="w-32 h-32 rounded-[3rem] glass-panel flex items-center justify-center overflow-hidden cursor-pointer hover:border-emerald-400 hover:scale-105 transition-all"><img src={r.image} className="w-[80%] h-[80%] object-contain" /></div>
-                    <p className="mt-4 font-bold text-sm text-gray-800 dark:text-white text-center truncate px-2">{r.name}</p>
+                    <button onClick={(e) => { e.stopPropagation(); handleDeleteBot(r.id); }} className="absolute -top-3 -right-3 bg-red-500 text-white w-10 h-10 rounded-xl z-20 font-black shadow-lg opacity-0 group-hover:opacity-100 transition-all hover:bg-red-600 hover:scale-110 flex items-center justify-center border-2 border-white/20">✕</button>
+                    <div onClick={() => setEditingBot(r)} className="w-36 h-36 md:w-44 md:h-44 rounded-[2.5rem] glass-panel flex items-center justify-center overflow-hidden cursor-pointer hover:border-emerald-400 hover:scale-105 transition-all shadow-xl"><img src={r.image} className="w-[75%] h-[75%] object-contain drop-shadow-md group-hover:scale-110 transition-transform duration-500" /></div>
+                    <p className="mt-5 font-black text-base text-gray-900 dark:text-white text-center truncate px-2 drop-shadow-sm tracking-tight">{r.name}</p>
                   </div>
                 ))}
-                <div onClick={() => setEditingBot({id:Date.now(), name:'New Bot', ip:'', status:'Standby', battery:100, image:'https://api.dicebear.com/7.x/bottts/svg?seed='+Date.now()+'&backgroundColor=transparent'})} className="w-32 h-32 rounded-[3rem] glass-card flex flex-col items-center justify-center cursor-pointer border-dashed border-2 hover:text-emerald-600 hover:border-emerald-500/50 transition-colors gap-2">
-                  <span className="text-2xl">+</span><span className="text-xs font-bold">{t.add_bot}</span>
+                <div onClick={() => setEditingBot({id:Date.now(), name:'New Bot', ip:'', status:'Standby', battery:100, image:'https://api.dicebear.com/7.x/bottts/svg?seed='+Date.now()+'&backgroundColor=transparent'})} className="w-36 h-36 md:w-44 md:h-44 rounded-[2.5rem] glass-card flex flex-col items-center justify-center cursor-pointer border-dashed border-2 hover:text-emerald-600 hover:border-emerald-500/50 transition-colors gap-3 shadow-sm">
+                  <span className="text-3xl font-black">+</span><span className="text-sm font-black tracking-wide">{t.add_bot}</span>
                 </div>
               </div>
               <div className="mt-16 w-full max-w-sm">
-                 <button onClick={onNext} className="w-full bg-gray-900/80 dark:bg-emerald-600/80 backdrop-blur-md text-white py-4 rounded-[2rem] font-bold text-lg shadow-lg hover:-translate-y-1 transition-transform">{t.go_to_dashboard}</button>
+                 <button onClick={onNext} className="w-full bg-gray-900 dark:bg-emerald-600 text-white py-4 rounded-[1.5rem] font-black text-lg shadow-[0_10px_30px_rgba(0,0,0,0.3)] hover:-translate-y-1 transition-transform duration-300 border border-white/10 flex items-center justify-center gap-3">{t.go_to_dashboard} <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></button>
               </div>
             </div>
           )}
@@ -552,6 +594,9 @@
       
       const [editProfileName, setEditProfileName] = useState(userData.name);
 
+      const [isEditingZones, setIsEditingZones] = useState(false);
+      const [editingZonesData, setEditingZonesData] = useState([]);
+
       const isGuest = userData.role === 'guest';
       const profFileRef = useRef();
 
@@ -568,14 +613,12 @@
 
       const filteredAlerts = alertFilter === 'all' ? alerts : alerts.filter(a => a.type === alertFilter);
 
-      // --- QA Fix 2: Reset Robot Index if out of bounds ---
       useEffect(() => {
          if (activeRobotIndex >= robots.length) {
             setActiveRobotIndex(Math.max(0, robots.length - 1));
          }
       }, [robots.length, activeRobotIndex]);
 
-      // --- Interactive Handlers ---
       const handleApplyResource = (zoneId) => {
          if (isGuest) return;
          setPlantZones(prev => prev.map(z => z.id === zoneId ? { ...z, moisture: 100, health: Math.min(100, z.health + 5), issue: null } : z));
@@ -608,8 +651,8 @@
       };
 
       const handleExportExcel = () => {
-         let csv = "Farm OS Report\n\nZone,Crop,Health,Moisture\n";
-         plantZones.forEach(z => csv += `${z.id},${z.crop},${z.health}%,${z.moisture}%\n`);
+         let csv = "Farm OS Report\n\nZone,Crop Name,Health,Moisture\n";
+         plantZones.forEach(z => csv += `${z.id},${z.name},${z.health}%,${z.moisture}%\n`);
          csv += `\nSoil Stats\nN,P,K,Moisture,pH\n${soilStats.N}%,${soilStats.P}%,${soilStats.K}%,${soilStats.moisture}%,${soilStats.pH}\n`;
          
          const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csv], { type: 'text/csv;charset=utf-8;' });
@@ -625,7 +668,6 @@
          setTimeout(() => { window.print(); showToast(t.export_pdf + ' Initiated!'); }, 500);
       };
 
-      // --- QA Fix 3: Profile Save Logic ---
       const handleSaveProfile = () => {
          const updatedUser = { ...userData, name: editProfileName };
          setUserData(updatedUser);
@@ -638,10 +680,8 @@
          showToast("Profile Updated!");
       };
 
-      // MULTI-FARM LOGIC
       const userFarms = userData.farms && userData.farms.length > 0 ? userData.farms : [{ id: 'default', name: userData.farmName }];
 
-      // --- QA Fix 4: Duplicate Farm Name Check ---
       const handleAddFarm = () => {
          const trimmedName = newFarmName.trim();
          if (!trimmedName) return;
@@ -668,7 +708,6 @@
          setUserData(updatedUser);
          showToast(`Loading: ${farm.name}`);
          
-         // QA Fix 2 (Refined): Simulate real load by changing states entirely
          setSoilStats({ N: 40+Math.floor(Math.random()*40), P: 30+Math.floor(Math.random()*40), K: 40+Math.floor(Math.random()*40), moisture: 30+Math.floor(Math.random()*50), pH: (5.5 + Math.random()*1.5).toFixed(1) });
          setPlantZones(prev => prev.map(z => ({...z, health: 50+Math.floor(Math.random()*50), moisture: 30+Math.floor(Math.random()*60), issue: Math.random() > 0.8 ? 'Warning' : null})));
          
@@ -683,56 +722,56 @@
           <TopControls lang={lang} setLang={setLang} isDarkMode={isDarkMode} setIsDarkMode={setIsDarkMode} />
 
           {/* Desktop Sidebar */}
-          <aside className="hidden lg:flex flex-col w-[280px] h-full p-4 md:p-6 z-10 shrink-0">
-            <div className="glass-panel-strong rounded-[2.5rem] h-full flex flex-col overflow-hidden shadow-xl">
-              {isGuest && <div className="bg-gray-800/80 text-white text-[10px] font-bold tracking-widest uppercase py-1.5 text-center border-b border-white/20">{t.guest_mode}</div>}
-              <div className="p-6 flex items-center gap-4 border-b border-white/20 bg-white/10 dark:bg-black/10">
-                <div className="bg-white/40 dark:bg-black/20 p-2 rounded-2xl shadow-inner"><AppLogo className="w-10 h-10" /></div>
+          <aside className="hidden lg:flex flex-col w-[300px] h-full p-6 z-10 shrink-0">
+            <div className="glass-panel-strong rounded-[2.5rem] h-full flex flex-col overflow-hidden shadow-2xl">
+              {isGuest && <div className="bg-gray-900 text-white text-[10px] font-black tracking-[0.2em] uppercase py-2.5 text-center border-b border-white/20">{t.guest_mode}</div>}
+              <div className="p-8 flex items-center gap-5 border-b border-white/20 bg-white/20 dark:bg-black/20">
+                <div className="bg-white/60 dark:bg-black/30 p-3 rounded-[1.2rem] shadow-inner border border-white/50"><AppLogo className="w-10 h-10" /></div>
                 <div className="overflow-hidden">
-                  <h1 className="text-base font-black text-gray-900 dark:text-white truncate">{userData.farmName}</h1>
-                  <p className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold uppercase tracking-widest">{t.smart_eco}</p>
+                  <h1 className="text-lg font-black text-gray-900 dark:text-white truncate tracking-tight">{userData.farmName}</h1>
+                  <p className="text-[10px] text-emerald-700 dark:text-emerald-400 font-black uppercase tracking-widest mt-0.5">{t.smart_eco}</p>
                 </div>
               </div>
-              <div className="flex-1 overflow-y-auto custom-scroll p-3 space-y-1">
+              <div className="flex-1 overflow-y-auto custom-scroll p-4 space-y-2">
                 {tabs.map(tab => (
-                  <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-[1.5rem] text-sm font-bold transition-all ${activeTab === tab.id ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-400/30 shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:bg-white/30 dark:hover:bg-black/20 border border-transparent'}`}>
+                  <button key={tab.id} onClick={() => setActiveTab(tab.id)} className={`w-full flex items-center gap-4 px-5 py-4 rounded-[1.5rem] text-sm font-black transition-all duration-300 ${activeTab === tab.id ? 'bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-400/50 shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:bg-white/40 dark:hover:bg-slate-700/40 border border-transparent hover:translate-x-1'}`}>
                     {tab.icon} <span className="truncate">{tab.name}</span>
                   </button>
                 ))}
               </div>
-              <div className="p-4 border-t border-white/20 bg-white/20 dark:bg-black/20 flex items-center gap-3 cursor-pointer hover:bg-white/30 transition-colors" onClick={()=>setActiveTab('user')}>
-                 <img src={userData.avatar} className="w-10 h-10 rounded-full border-2 border-white/50 object-cover bg-white/50" />
+              <div className="p-6 border-t border-white/20 bg-white/30 dark:bg-black/30 flex items-center gap-4 cursor-pointer hover:bg-white/50 transition-colors" onClick={()=>setActiveTab('user')}>
+                 <img src={userData.avatar} className="w-12 h-12 rounded-[1rem] border-2 border-white/80 object-cover bg-white/60 shadow-sm" />
                  <div className="flex-1 overflow-hidden">
-                    <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{userData.name}</p>
-                    <p className="text-[10px] font-bold text-emerald-600 bg-emerald-100/50 dark:bg-emerald-900/30 px-2 py-0.5 rounded inline-block">{isGuest ? 'Guest' : t.role_owner}</p>
+                    <p className="text-base font-black text-gray-900 dark:text-white truncate">{userData.name}</p>
+                    <p className="text-[10px] font-black text-emerald-800 dark:text-emerald-200 bg-emerald-500/10 px-2.5 py-1 rounded-lg inline-block mt-1.5 uppercase tracking-widest border border-emerald-500/20">{isGuest ? 'Guest' : t.role_owner}</p>
                  </div>
               </div>
             </div>
           </aside>
 
           {/* Main Content Area */}
-          <main id="printable-area" className="flex-1 h-full overflow-y-auto custom-scroll p-4 md:p-6 lg:p-8 pb-24 lg:pb-8 relative z-0 w-full mx-auto scroll-smooth">
+          <main id="printable-area" className="flex-1 h-full overflow-y-auto custom-scroll p-4 md:p-8 lg:p-10 pb-28 lg:pb-10 relative z-0 w-full mx-auto scroll-smooth">
             
             {/* Mobile Header */}
-            <div className="lg:hidden glass-panel-strong p-4 rounded-[2rem] flex justify-between items-center shadow-lg mb-6 sticky top-2 z-50">
-                <div className="flex items-center gap-3">
-                   <AppLogo className="w-8 h-8" />
+            <div className="lg:hidden glass-panel-strong p-4 sm:p-5 rounded-[2rem] flex justify-between items-center shadow-xl mb-6 sticky top-2 z-50 border border-white/50">
+                <div className="flex items-center gap-3 sm:gap-4">
+                   <div className="bg-white/60 dark:bg-black/30 p-2.5 rounded-xl shadow-inner border border-white/40"><AppLogo className="w-8 h-8 sm:w-10 sm:h-10" /></div>
                    <div>
-                     <h1 className="text-sm font-black text-gray-900 dark:text-white truncate max-w-[150px]">{userData.farmName}</h1>
-                     {isGuest && <p className="text-[10px] text-red-500 font-bold">{t.guest_mode}</p>}
+                     <h1 className="text-base sm:text-lg font-black text-gray-900 dark:text-white truncate max-w-[150px] sm:max-w-[200px] tracking-tight">{userData.farmName}</h1>
+                     {isGuest && <p className="text-[10px] text-red-500 font-black uppercase tracking-widest mt-0.5">{t.guest_mode}</p>}
                    </div>
                 </div>
-                <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 bg-white/30 rounded-xl hover:bg-white/50 transition-colors">
-                  <svg className="w-6 h-6 text-gray-800 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16m-7 6h7"/></svg>
+                <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-3 bg-white/50 dark:bg-slate-700/50 rounded-[1.2rem] hover:bg-white/80 transition-colors shadow-sm">
+                  <svg className="w-6 h-6 text-gray-900 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 6h16M4 12h16m-7 6h7"/></svg>
                 </button>
             </div>
 
             {/* Mobile Menu Overlay */}
             {isMobileMenuOpen && (
-              <div className="lg:hidden fixed inset-0 z-[600] flex items-end backdrop-blur-md bg-black/40" onClick={() => setIsMobileMenuOpen(false)}>
-                <div className="glass-panel-strong w-full rounded-t-[2.5rem] p-6 pb-12 modal-enter grid grid-cols-2 gap-3" onClick={e => e.stopPropagation()}>
+              <div className="lg:hidden fixed inset-0 z-[600] flex items-end backdrop-blur-xl bg-black/50" onClick={() => setIsMobileMenuOpen(false)}>
+                <div className="glass-panel-strong w-full rounded-t-[2.5rem] p-6 pb-12 modal-enter grid grid-cols-2 gap-4 border-t border-white/40 shadow-[0_-20px_50px_rgba(0,0,0,0.3)]" onClick={e => e.stopPropagation()}>
                   {tabs.map(tab => (
-                    <button key={tab.id} onClick={() => {setActiveTab(tab.id); setIsMobileMenuOpen(false);}} className={`p-4 rounded-[1.5rem] flex flex-col items-center gap-2 text-xs font-bold text-center ${activeTab === tab.id ? 'bg-emerald-500/30 text-emerald-800 dark:text-emerald-200 border border-emerald-400/50' : 'glass-card text-gray-700 dark:text-gray-200 hover:bg-white/40'}`}>
+                    <button key={tab.id} onClick={() => {setActiveTab(tab.id); setIsMobileMenuOpen(false);}} className={`p-5 rounded-[1.5rem] flex flex-col items-center justify-center gap-3 text-xs font-black text-center transition-all duration-300 ${activeTab === tab.id ? 'bg-emerald-500/20 text-emerald-800 dark:text-emerald-200 border-2 border-emerald-400/60 shadow-inner' : 'glass-card text-gray-700 dark:text-gray-200 hover:bg-white/50'}`}>
                       {tab.icon} {tab.name.split('.')[1] || tab.name}
                     </button>
                   ))}
@@ -741,130 +780,140 @@
             )}
 
             {/* ---------------- TABS CONTENT ---------------- */}
-            <div className="animate-in fade-in duration-500 space-y-6">
+            <div className="animate-in fade-in duration-500 space-y-6 md:space-y-8 max-w-[1400px] mx-auto">
               
               {/* 1. OVERVIEW */}
               {activeTab === 'overview' && (
-                <>
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    {[{l:t.soil_moisture, v:`${soilStats.moisture}%`, c:'text-blue-600', i:'💧'}, {l:t.active_bots, v:robots.length, c:'text-emerald-600', i:'🤖'}, {l:t.active_alerts, v:alerts.length, c:'text-red-600', i:'🔔'}, {l:'Avg Health', v:`${Math.round(plantZones.reduce((a,b)=>a+b.health,0)/plantZones.length)}%`, c:'text-purple-600', i:'✨'}].map((s,i) => (
-                      <div key={i} className="glass-panel p-5 md:p-6 rounded-[2.5rem] flex flex-col justify-between hover:scale-105 transition-transform relative overflow-hidden group">
-                        <div className="absolute -right-4 -top-4 w-20 h-20 rounded-full bg-white/20 blur-xl group-hover:scale-150 transition-transform"></div>
-                        <div className="flex justify-between items-start mb-2 relative z-10">
-                          <span className="text-[10px] md:text-xs font-black uppercase text-gray-500 dark:text-gray-400 tracking-widest">{s.l}</span>
-                          <span className="text-xl md:text-2xl opacity-80">{s.i}</span>
+                <div className="animate-[slideUp_0.6s_ease-out]">
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
+                    {[{l:t.soil_moisture, v:`${soilStats.moisture}%`, c:'text-blue-600 dark:text-blue-400', i:'💧'}, {l:t.active_bots, v:robots.length, c:'text-emerald-600 dark:text-emerald-400', i:'🤖'}, {l:t.active_alerts, v:alerts.length, c:'text-red-600 dark:text-red-400', i:'🔔'}, {l:'Avg Health', v:`${Math.round(plantZones.reduce((a,b)=>a+b.health,0)/plantZones.length)}%`, c:'text-purple-600 dark:text-purple-400', i:'✨'}].map((s,i) => (
+                      <div key={i} className="glass-panel p-6 rounded-[1.5rem] flex flex-col justify-between hover:scale-105 transition-transform duration-300 relative overflow-hidden group">
+                        <div className="absolute -right-4 -top-4 w-24 h-24 rounded-full bg-white/30 blur-2xl group-hover:scale-150 transition-transform duration-500"></div>
+                        <div className="flex justify-between items-start mb-4 relative z-10">
+                          <span className="text-[10px] md:text-xs font-black uppercase text-gray-500 dark:text-gray-400 tracking-[0.2em]">{s.l}</span>
+                          <span className="text-2xl opacity-80 drop-shadow-md">{s.i}</span>
                         </div>
-                        <span className={`text-4xl md:text-5xl font-black mt-2 drop-shadow-md relative z-10 ${s.c}`}>{s.v}</span>
+                        <span className={`text-4xl md:text-5xl font-black mt-2 drop-shadow-md relative z-10 tracking-tight ${s.c}`}>{s.v}</span>
                       </div>
                     ))}
                   </div>
                   
                   {/* Interactive Map - Fixed Grid */}
-                  <div className="w-full h-[450px] lg:h-[500px] glass-panel-strong rounded-[3rem] relative p-4 shadow-xl flex flex-col">
-                     <div className="absolute top-6 md:top-8 left-6 md:left-8 z-30 glass-panel px-4 py-2 rounded-xl flex items-center gap-2 border border-white/40">
-                       <span className="w-2.5 h-2.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
-                       <span className="text-sm font-bold text-gray-800 dark:text-white">{t.live_map}</span>
+                  <div className="w-full h-[500px] lg:h-[650px] glass-panel-strong rounded-[3rem] relative p-5 md:p-8 shadow-2xl flex flex-col border border-white/60 dark:border-white/20">
+                     <div className="absolute top-8 left-8 md:top-10 md:left-10 z-30 glass-card bg-white/70 dark:bg-black/50 px-5 py-3 rounded-xl flex items-center gap-3 border border-white/60 shadow-sm backdrop-blur-xl">
+                       <span className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.8)]"></span>
+                       <span className="text-sm font-black text-gray-900 dark:text-white tracking-wide">{t.live_map}</span>
                      </div>
+
+                     {!isGuest && (
+                        <div className="absolute top-8 right-8 md:top-10 md:right-10 z-30">
+                           <button onClick={() => { setEditingZonesData(JSON.parse(JSON.stringify(plantZones))); setIsEditingZones(true); }} className="glass-card bg-white/70 dark:bg-black/50 px-5 py-3 rounded-xl flex items-center gap-2 border border-white/60 text-xs font-black text-gray-900 dark:text-white hover:bg-white/90 transition-all duration-300 shadow-sm backdrop-blur-xl hover:scale-105">
+                              ⚙️ {t.edit_zones}
+                           </button>
+                        </div>
+                     )}
                      
-                     <div className="flex-1 w-full rounded-[2.5rem] farm-pattern relative overflow-hidden bg-black/5 dark:bg-black/20 border border-white/20 p-4 md:p-8">
-                       <div className="w-full h-full grid grid-cols-2 grid-rows-2 gap-4 md:gap-6 z-10 relative">
+                     <div className="flex-1 w-full rounded-[2.5rem] farm-pattern relative overflow-hidden bg-black/5 dark:bg-black/30 border border-white/30 p-5 md:p-12 mt-16 md:mt-0 shadow-inner">
+                       {/* Grid for symmetric zone placement */}
+                       <div className="w-full h-full grid grid-cols-2 grid-rows-2 gap-5 md:gap-10 z-10 relative">
                          {plantZones.map((z) => (
-                           <div key={z.id} onClick={()=>handleApplyResource(z.id)} className={`relative rounded-[2rem] bg-gradient-to-br ${z.color} flex items-center justify-center backdrop-blur-md border border-white/40 dark:border-white/10 shadow-inner group cursor-pointer hover:scale-[1.03] transition-transform overflow-hidden`}>
-                             {autoSprinklerOn && <div className="absolute inset-0 bg-blue-500/10 flex items-center justify-center"><div className="text-blue-500/50 text-4xl animate-rain">🌧️</div></div>}
+                           <div key={z.id} onClick={()=>handleApplyResource(z.id)} className={`relative rounded-[2rem] bg-gradient-to-br ${z.color} flex items-center justify-center backdrop-blur-md border border-white/50 dark:border-white/20 shadow-md group cursor-pointer hover:scale-[1.03] transition-all duration-300 overflow-hidden`}>
+                             {autoSprinklerOn && <div className="absolute inset-0 bg-blue-500/10 flex items-center justify-center"><div className="text-blue-500/60 text-6xl animate-rain drop-shadow-md">🌧️</div></div>}
                              <div className="text-center relative z-20">
-                                <span className="text-4xl sm:text-5xl drop-shadow-lg mb-2 block group-hover:scale-110 transition-transform">{z.crop === 'Tomato' ? '🍅' : z.crop === 'Lettuce' ? '🥬' : z.crop === 'Melon' ? '🍈' : '🍓'}</span>
-                                <span className="bg-white/80 dark:bg-black/50 text-[10px] sm:text-xs font-black px-3 py-1.5 rounded-xl backdrop-blur-md text-gray-900 dark:text-white border border-white/30 shadow-sm">{t.zone} {z.id} ({z.moisture}%)</span>
-                                {z.issue && <span className="absolute -top-3 -right-3 sm:-top-2 sm:-right-2 bg-red-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full animate-bounce shadow-lg border border-white/50">{z.issue}</span>}
+                                <span className="text-5xl sm:text-6xl lg:text-7xl drop-shadow-xl mb-4 block group-hover:scale-110 group-hover:-translate-y-3 transition-transform duration-500 animate-float">{z.emoji}</span>
+                                <span className="bg-white/90 dark:bg-black/80 text-[10px] sm:text-xs font-black px-4 py-2 rounded-xl backdrop-blur-md text-gray-900 dark:text-white border border-white/50 shadow-md tracking-wide">{z.name} ({z.moisture}%)</span>
+                                {z.issue && <span className="absolute -top-3 -right-3 sm:-top-2 sm:-right-2 bg-red-500 text-white text-[10px] font-black px-3 py-1.5 rounded-full animate-bounce shadow-lg border-2 border-white/80 uppercase tracking-widest">{z.issue}</span>}
                              </div>
                            </div>
                          ))}
                        </div>
 
+                       {/* Robots visually mapped safely */}
                        {robots.map((r, i) => {
                          const pos = [ { top: '30%', left: '50%' }, { top: '70%', left: '80%' }, { top: '50%', left: '20%' } ];
                          return (
-                           <div key={r.id} className="absolute glass-panel p-1.5 rounded-full shadow-xl border-2 border-emerald-400 w-12 h-12 sm:w-14 sm:h-14 z-30 flex items-center justify-center cursor-pointer hover:scale-125 transition-transform" style={{top: pos[i]?.top || '50%', left: pos[i]?.left || '50%', transform: 'translate(-50%, -50%)'}} onClick={()=>{setActiveTab('robot'); setActiveRobotIndex(i);}}>
-                             <img src={r.image} className="w-full h-full object-cover rounded-full" />
-                             <div className={`absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full border-2 border-white ${r.battery > 50 ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`}></div>
+                           <div key={r.id} className="absolute glass-card p-2 rounded-[1.2rem] shadow-2xl border-2 border-emerald-400 w-16 h-16 sm:w-20 sm:h-20 z-30 flex items-center justify-center cursor-pointer hover:scale-125 transition-transform duration-300 bg-white/60 dark:bg-black/60" style={{top: pos[i]?.top || '50%', left: pos[i]?.left || '50%', transform: 'translate(-50%, -50%)'}} onClick={()=>{setActiveTab('robot'); setActiveRobotIndex(i);}}>
+                             <img src={r.image} className="w-full h-full object-cover" />
+                             <div className={`absolute -bottom-1.5 -right-1.5 w-4 h-4 rounded-full border-2 border-white shadow-md ${r.battery > 50 ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`}></div>
                            </div>
                          )
                        })}
                      </div>
                   </div>
-                </>
+                </div>
               )}
 
               {/* 2. PLANT HEALTH */}
               {activeTab === 'plant' && (
-                <>
-                  <h2 className="text-3xl font-black text-gray-800 dark:text-white mb-6 drop-shadow-sm">{t.plant_health}</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                     <div className="md:col-span-2 glass-panel p-6 rounded-[2.5rem]">
-                       <h3 className="text-lg font-bold mb-4 flex justify-between items-center">
+                <div className="animate-[slideUp_0.6s_ease-out]">
+                  <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-8 drop-shadow-md tracking-tight">{t.plant_health}</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+                     <div className="md:col-span-2 glass-panel-strong p-6 md:p-8 rounded-[2.5rem] shadow-xl border-white/60">
+                       <h3 className="text-xl font-black mb-6 flex justify-between items-center tracking-tight">
                           {t.heatmap}
-                          {scanStatus === 'complete' && <button onClick={()=>setScanStatus('idle')} className="text-[10px] bg-white/40 dark:bg-black/40 px-3 py-1.5 rounded-xl border border-white/20 hover:bg-white/60 transition-colors">Reset Scan</button>}
+                          {scanStatus === 'complete' && <button onClick={()=>setScanStatus('idle')} className="text-xs bg-white/70 dark:bg-black/50 px-4 py-2 rounded-xl border border-white/50 hover:bg-white/90 transition-colors font-bold shadow-sm uppercase tracking-widest">Reset Scan</button>}
                        </h3>
-                       <div className="w-full h-[300px] rounded-[1.5rem] overflow-hidden relative bg-slate-200 dark:bg-slate-800 border border-white/30">
-                          <div className={`absolute inset-0 bg-gradient-to-tr from-emerald-500/40 via-yellow-400/40 to-red-500/40 mix-blend-multiply dark:mix-blend-screen filter blur-xl transition-opacity duration-1000 ${scanStatus === 'complete' ? 'opacity-100' : 'opacity-40'}`}></div>
+                       <div className="w-full h-[350px] lg:h-[450px] rounded-[2rem] overflow-hidden relative bg-slate-200 dark:bg-slate-800 border-2 border-white/50 shadow-inner">
+                          <div className={`absolute inset-0 bg-gradient-to-tr from-emerald-500/50 via-yellow-400/50 to-red-500/50 mix-blend-multiply dark:mix-blend-screen filter blur-2xl transition-opacity duration-1000 ${scanStatus === 'complete' ? 'opacity-100' : 'opacity-40'}`}></div>
                           
                           {scanStatus === 'idle' && (
-                             <div className="absolute inset-0 flex flex-col items-center justify-center font-black text-white/80 text-xl tracking-widest drop-shadow-md z-10">
+                             <div className="absolute inset-0 flex flex-col items-center justify-center font-black text-white/90 text-2xl md:text-3xl tracking-widest drop-shadow-lg z-10 text-center px-4">
                                Drone NDVI Scan Overlay
-                               <p className="text-[10px] font-bold tracking-normal mt-2 opacity-80 uppercase bg-black/30 px-3 py-1 rounded-full">Standby Mode</p>
+                               <p className="text-xs md:text-sm font-black tracking-[0.2em] mt-4 opacity-90 uppercase bg-black/40 px-5 py-2 rounded-full border border-white/20 shadow-md">Standby Mode</p>
                              </div>
                           )}
 
                           {scanStatus === 'scanning' && (
                              <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
-                                <div className="absolute w-full h-1 bg-emerald-400 shadow-[0_0_20px_rgba(16,185,129,1)] animate-scan left-0"></div>
-                                <div className="mt-4 text-sm bg-black/60 px-6 py-2.5 rounded-full animate-pulse text-emerald-400 backdrop-blur-sm border border-emerald-500/50 font-bold">{t.scanning}</div>
+                                <div className="absolute w-full h-2 bg-emerald-400 shadow-[0_0_40px_rgba(16,185,129,1)] animate-scan left-0"></div>
+                                <div className="mt-4 text-base md:text-lg bg-black/80 px-8 py-3 rounded-full animate-pulse text-emerald-400 backdrop-blur-md border border-emerald-500/50 font-black tracking-widest shadow-2xl">{t.scanning}</div>
                              </div>
                           )}
 
                           {scanStatus === 'complete' && (
-                             <div className="absolute inset-0 z-10 p-4 flex flex-col justify-end">
-                                <div className="absolute top-[30%] left-[20%] w-4 h-4 bg-emerald-500 rounded-full shadow-[0_0_10px_#10b981] animate-pulse"></div>
-                                <div className="absolute top-[50%] right-[30%] w-8 h-8 bg-red-500 rounded-full shadow-[0_0_15px_#ef4444] animate-bounce flex items-center justify-center text-xs">⚠️</div>
-                                <div className="glass-panel p-4 rounded-[1.5rem] w-full max-w-xs mx-auto backdrop-blur-xl border-white/50 shadow-2xl animate-toastIn bg-white/60 dark:bg-black/60">
-                                   <h4 className="font-black text-sm text-gray-900 dark:text-white flex items-center gap-2">✅ {t.scan_complete}</h4>
-                                   <p className="text-xs text-red-600 dark:text-red-400 font-bold mt-2">⚠️ High Risk in Zone B</p>
-                                   <p className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold mt-1">✓ Zone A, C, D: Healthy</p>
+                             <div className="absolute inset-0 z-10 p-6 md:p-8 flex flex-col justify-end">
+                                <div className="absolute top-[30%] left-[20%] w-6 h-6 bg-emerald-500 rounded-full shadow-[0_0_20px_#10b981] animate-pulse border-2 border-white"></div>
+                                <div className="absolute top-[50%] right-[30%] w-12 h-12 bg-red-500 rounded-full shadow-[0_0_30px_#ef4444] animate-bounce flex items-center justify-center text-2xl border-2 border-white">⚠️</div>
+                                <div className="glass-panel-strong p-6 rounded-[2rem] w-full max-w-md mx-auto backdrop-blur-2xl border-white/80 shadow-[0_20px_50px_rgba(0,0,0,0.3)] animate-toastIn">
+                                   <h4 className="font-black text-base md:text-lg text-gray-900 dark:text-white flex items-center gap-3 tracking-tight"><span className="text-2xl">✅</span> {t.scan_complete}</h4>
+                                   <p className="text-sm md:text-base text-red-600 dark:text-red-400 font-black mt-3">⚠️ High Risk in Zone B</p>
+                                   <p className="text-xs md:text-sm text-emerald-700 dark:text-emerald-400 font-bold mt-1.5 uppercase tracking-wide">✓ Zone A, C, D: Healthy</p>
                                 </div>
                              </div>
                           )}
                        </div>
                      </div>
-                     <div className="space-y-4">
-                       <div onClick={handleScanPlant} className={`glass-card p-6 rounded-[2.5rem] text-center cursor-pointer group border-emerald-500/20 ${isScanning?'bg-emerald-500/20':'hover:bg-emerald-500/10 hover:border-emerald-500/50'}`}>
-                         <span className={`text-5xl block mb-3 transition-transform ${isScanning ? 'animate-bounce' : 'group-hover:scale-110'}`}>📸</span>
-                         <h4 className="font-black text-gray-800 dark:text-white">{t.disease_detect}</h4>
-                         <p className="text-[10px] font-bold text-gray-500 mt-1">Click to analyze</p>
+                     <div className="space-y-6 md:space-y-8 flex flex-col justify-center">
+                       <div onClick={handleScanPlant} className={`glass-card p-8 md:p-10 rounded-[2.5rem] text-center cursor-pointer group shadow-lg transition-all duration-300 border-2 ${isScanning?'border-emerald-500 bg-emerald-500/20':'border-white/50 hover:border-emerald-400 hover:bg-emerald-500/10 hover:-translate-y-2'}`}>
+                         <span className={`text-6xl md:text-7xl block mb-5 transition-transform duration-300 drop-shadow-xl ${isScanning ? 'animate-bounce' : 'group-hover:scale-110'}`}>📸</span>
+                         <h4 className="font-black text-xl tracking-tight text-gray-900 dark:text-white">{t.disease_detect}</h4>
+                         <p className="text-xs font-black text-gray-500 dark:text-gray-400 mt-2 uppercase tracking-widest">Click to analyze</p>
                        </div>
-                       <div onClick={handleScanPlant} className={`glass-card p-6 rounded-[2.5rem] text-center cursor-pointer group border-orange-500/20 ${isScanning?'bg-orange-500/20':'hover:bg-orange-500/10 hover:border-orange-500/50'}`}>
-                         <span className={`text-5xl block mb-3 transition-transform ${isScanning ? 'animate-bounce' : 'group-hover:scale-110'}`}>🐛</span>
-                         <h4 className="font-black text-gray-800 dark:text-white">{t.pest_detect}</h4>
-                         <p className="text-[10px] font-bold text-gray-500 mt-1">Smart camera pest counting</p>
+                       <div onClick={handleScanPlant} className={`glass-card p-8 md:p-10 rounded-[2.5rem] text-center cursor-pointer group shadow-lg transition-all duration-300 border-2 border-white/50 hover:border-orange-400 hover:bg-orange-500/10 hover:-translate-y-2`}>
+                         <span className="text-6xl md:text-7xl block mb-5 group-hover:scale-110 transition-transform duration-300 drop-shadow-xl">🐛</span>
+                         <h4 className="font-black text-xl tracking-tight text-gray-900 dark:text-white">{t.pest_detect}</h4>
+                         <p className="text-xs font-black text-gray-500 dark:text-gray-400 mt-2 uppercase tracking-widest">Smart camera counting</p>
                        </div>
                      </div>
                   </div>
-                </>
+                </div>
               )}
 
               {/* 3. SOIL ANALYTICS & SIMULATOR */}
               {activeTab === 'soil' && (
-                <>
-                   <h2 className="text-3xl font-black text-gray-800 dark:text-white mb-6 drop-shadow-sm">{t.soil_analysis}</h2>
-                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                      <div className="glass-panel p-6 md:p-8 rounded-[3rem] h-fit relative">
+                <div className="animate-[slideUp_0.6s_ease-out]">
+                   <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-8 drop-shadow-md tracking-tight">{t.soil_analysis}</h2>
+                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+                      <div className="glass-panel-strong p-6 md:p-10 rounded-[3rem] h-fit relative shadow-xl border-white/60">
                          {isGuest && (
-                           <div className="absolute inset-0 bg-white/40 dark:bg-black/50 backdrop-blur-md z-20 flex flex-col items-center justify-center text-center p-6 rounded-[3rem]">
-                              <span className="p-4 bg-white/50 dark:bg-black/50 rounded-full mb-4 shadow-inner border border-white/20"><svg className="w-8 h-8 text-gray-800 dark:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg></span>
-                              <h4 className="font-black text-xl text-gray-900 dark:text-white">{t.guest_mode}</h4><p className="text-sm font-bold text-gray-700 dark:text-gray-300 mt-2">{t.guest_locked}</p>
+                           <div className="absolute inset-0 bg-white/60 dark:bg-black/70 backdrop-blur-lg z-20 flex flex-col items-center justify-center text-center p-8 rounded-[3rem]">
+                              <span className="p-5 bg-white/80 dark:bg-black/80 rounded-[1.5rem] mb-5 shadow-inner border border-white/50"><svg className="w-10 h-10 text-gray-900 dark:text-white drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg></span>
+                              <h4 className="font-black text-2xl text-gray-900 dark:text-white tracking-tight">{t.guest_mode}</h4><p className="text-sm font-black uppercase tracking-widest text-gray-700 dark:text-gray-300 mt-3">{t.guest_locked}</p>
                            </div>
                          )}
-                         <div className="flex items-center gap-3 mb-8">
-                           <span className="p-3 bg-purple-500/20 rounded-[1.2rem] text-purple-600 border border-purple-400/30"><svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg></span>
-                           <h3 className="font-black text-xl">{t.simulator}</h3>
+                         <div className="flex items-center gap-4 mb-10 border-b border-white/30 pb-6">
+                           <span className="p-3.5 bg-purple-500/20 rounded-[1.5rem] text-purple-600 dark:text-purple-400 border border-purple-400/40 shadow-inner"><svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg></span>
+                           <h3 className="font-black text-2xl tracking-tight">{t.simulator}</h3>
                          </div>
                          <div className="space-y-8">
                            {[ {l: 'Nitrogen (N)', v: soilStats.N, set: (v)=>setSoilStats({...soilStats, N:v}), c: 'emerald'},
@@ -872,253 +921,257 @@
                               {l: 'Potassium (K)', v: soilStats.K, set: (v)=>setSoilStats({...soilStats, K:v}), c: 'yellow'},
                               {l: t.soil_moisture, v: soilStats.moisture, set: (v)=>setSoilStats({...soilStats, moisture:v}), c: 'blue'}
                            ].map((item, idx) => (
-                             <div key={idx}>
-                               <div className="flex justify-between mb-3"><label className="text-xs font-bold">{item.l}</label><span className={`text-sm font-black text-${item.c}-600 dark:text-${item.c}-400`}>{item.v}%</span></div>
-                               <input disabled={isGuest} type="range" className={`w-full h-3 rounded-full appearance-none shadow-inner accent-${item.c}-500`} min="0" max="100" value={item.v} onChange={e=>item.set(Number(e.target.value))} />
+                             <div key={idx} className="group">
+                               <div className="flex justify-between mb-4"><label className="text-xs font-black uppercase tracking-widest text-gray-600 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{item.l}</label><span className={`text-lg font-black text-${item.c}-600 dark:text-${item.c}-400`}>{item.v}%</span></div>
+                               <input disabled={isGuest} type="range" className={`w-full h-4 rounded-full appearance-none shadow-inner accent-${item.c}-500 border border-white/40 cursor-pointer`} min="0" max="100" value={item.v} onChange={e=>item.set(Number(e.target.value))} />
                              </div>
                            ))}
                          </div>
                       </div>
 
-                      <div className="lg:col-span-2 space-y-6 flex flex-col">
-                         <div className="grid grid-cols-2 gap-4 flex-1">
+                      <div className="lg:col-span-2 space-y-6 md:space-y-8 flex flex-col">
+                         <div className="grid grid-cols-2 gap-4 md:gap-6 flex-1">
                            {[{l:'Nitrogen', v:soilStats.N+'%', c:'#10b981', h:[50,55,60,soilStats.N-5,soilStats.N]}, {l:'Phosphorus', v:soilStats.P+'%', c:'#f59e0b', h:[30,35,38,soilStats.P-2,soilStats.P]}, {l:'Potassium', v:soilStats.K+'%', c:'#eab308', h:[50,52,53,soilStats.K-1,soilStats.K]}, {l:'Moisture', v:soilStats.moisture+'%', c:'#3b82f6', h:[40,42,44,soilStats.moisture-3,soilStats.moisture]}].map((s,i) => (
-                             <div key={i} className="glass-panel p-5 md:p-6 rounded-[2.5rem] flex flex-col justify-between relative overflow-hidden group">
-                               <div className="z-10 flex justify-between">
-                                  <span className="text-[10px] md:text-xs font-black uppercase text-gray-500 dark:text-gray-400 tracking-widest">{s.l}</span>
-                                  <span className="text-2xl md:text-4xl font-black drop-shadow-md transition-all" style={{color: s.c}}>{s.v}</span>
+                             <div key={i} className="glass-panel p-6 md:p-8 rounded-[2.5rem] flex flex-col justify-between relative overflow-hidden group shadow-lg">
+                               <div className="z-10 flex flex-col items-start gap-2">
+                                  <span className="text-[10px] md:text-xs font-black uppercase text-gray-500 dark:text-gray-400 tracking-[0.2em]">{s.l}</span>
+                                  <span className="text-5xl md:text-6xl font-black drop-shadow-md transition-all tracking-tighter" style={{color: s.c}}>{s.v}</span>
                                </div>
-                               <div className="absolute bottom-0 left-0 w-full h-1/2 opacity-30 group-hover:opacity-70 transition-opacity">
+                               <div className="absolute bottom-0 left-0 w-full h-3/5 opacity-20 group-hover:opacity-80 transition-opacity duration-500">
                                   <SparklineChart data={s.h} color={s.c} />
                                </div>
                              </div>
                            ))}
                          </div>
-                         <div className="glass-panel-strong p-6 md:p-8 rounded-[3rem]">
-                            <h3 className="text-xl font-black mb-6">{t.soil_trend}</h3>
-                            <div className="w-full h-[180px] border-l-2 border-b-2 border-white/40 relative flex items-end justify-between px-4 pb-2">
+                         <div className="glass-panel-strong p-6 md:p-10 rounded-[3rem] shadow-xl border-white/60">
+                            <h3 className="text-xl font-black mb-8 tracking-tight">{t.soil_trend}</h3>
+                            <div className="w-full h-[200px] border-l-[3px] border-b-[3px] border-gray-300 dark:border-gray-600 relative flex items-end justify-between px-6 pb-2">
                                {[60, 65, 70, 68, 75, 80, soilStats.moisture].map((val, idx) => (
-                                 <div key={idx} className="w-6 sm:w-10 bg-gradient-to-t from-blue-600/50 to-blue-300/80 rounded-t-lg backdrop-blur-sm border border-white/30 hover:scale-y-110 transition-transform origin-bottom cursor-pointer text-center text-white/80 text-[10px] pb-2 font-bold flex flex-col justify-end" style={{height: `${val}%`}}>{val}</div>
+                                 <div key={idx} className="w-8 sm:w-12 bg-gradient-to-t from-blue-600/80 to-blue-400/90 rounded-t-xl backdrop-blur-md border border-white/50 hover:scale-y-110 hover:brightness-110 transition-all duration-300 origin-bottom cursor-pointer text-center text-white text-[10px] sm:text-xs pb-3 font-black flex flex-col justify-end shadow-lg" style={{height: `${val}%`}}>{val}</div>
                                ))}
                             </div>
                          </div>
                       </div>
                    </div>
-                </>
+                </div>
               )}
 
               {/* 4. RESOURCE */}
               {activeTab === 'resource' && (
-                <>
-                   <h2 className="text-3xl font-black mb-6 drop-shadow-sm">{t.resource_control}</h2>
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                     <div className="glass-panel p-6 md:p-8 rounded-[3rem]">
-                       <h3 className="text-xl font-black mb-6 flex items-center gap-2">💧 {t.water_fert}</h3>
-                       <div className="space-y-4">
+                <div className="animate-[slideUp_0.6s_ease-out]">
+                   <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-8 drop-shadow-md tracking-tight">{t.resource_control}</h2>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                     <div className="glass-panel-strong p-6 md:p-10 rounded-[3rem] shadow-xl border-white/60">
+                       <h3 className="text-2xl font-black mb-8 flex items-center gap-3 tracking-tight"><span className="text-4xl drop-shadow-md">💧</span> {t.water_fert}</h3>
+                       <div className="space-y-5">
                           {plantZones.map(z => (
-                            <div key={z.id} className="glass-card p-4 md:p-5 rounded-[2rem] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 group">
+                            <div key={z.id} className="glass-card p-5 md:p-6 rounded-[2rem] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 group shadow-sm border-white/60 hover:shadow-md">
                                <div>
-                                 <p className="font-black text-lg">{t.zone} {z.id} ({z.crop})</p>
-                                 <p className="text-xs font-bold text-blue-600 dark:text-blue-400 mt-1">{t.need_water}: {Math.max(0, 100 - z.moisture)}%</p>
+                                 <p className="font-black text-lg text-gray-900 dark:text-white flex items-center gap-3 tracking-tight"><span className="text-3xl drop-shadow-md animate-float">{z.emoji}</span> {z.name}</p>
+                                 <p className="text-xs font-black text-blue-600 dark:text-blue-400 mt-2 uppercase tracking-widest">{t.need_water}: {Math.max(0, 100 - z.moisture)}%</p>
                                </div>
-                               <button onClick={() => handleApplyResource(z.id)} disabled={isGuest || z.moisture >= 100} className={`w-full sm:w-auto px-6 py-2.5 rounded-xl text-xs font-bold transition-all ${isGuest || z.moisture >= 100 ? 'bg-gray-400/20 text-gray-500 cursor-not-allowed' : 'bg-blue-500/80 text-white hover:bg-blue-600 shadow-lg hover:-translate-y-1 border border-blue-400/50'}`}>{t.apply}</button>
+                               <button onClick={() => handleApplyResource(z.id)} disabled={isGuest || z.moisture >= 100} className={`w-full sm:w-auto px-8 py-3.5 rounded-[1.5rem] text-sm font-black transition-all duration-300 shadow-md border tracking-widest uppercase ${isGuest || z.moisture >= 100 ? 'bg-gray-400/20 text-gray-500 border-white/20 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-600 hover:-translate-y-1 border-blue-400/50 hover:shadow-[0_10px_30px_rgba(59,130,246,0.4)]'}`}>{t.apply}</button>
                             </div>
                           ))}
                        </div>
                      </div>
-                     <div className="space-y-6">
-                        <div className="glass-panel-strong p-6 md:p-8 rounded-[3rem] flex items-center justify-between bg-gradient-to-r from-blue-500/10 to-transparent border-blue-500/20">
+                     <div className="space-y-6 md:space-y-8">
+                        <div className="glass-panel-strong p-8 md:p-10 rounded-[3rem] flex items-center justify-between bg-gradient-to-r from-blue-500/10 to-transparent border border-blue-500/30 shadow-xl">
                            <div>
-                             <h4 className="font-black text-xl">{t.auto_sprinkler}</h4>
-                             <p className="text-xs font-bold text-gray-500 mt-1">Enterprise API Connected</p>
+                             <h4 className="font-black text-2xl tracking-tight">{t.auto_sprinkler}</h4>
+                             <p className="text-[10px] font-black text-gray-500 dark:text-gray-400 mt-2 uppercase tracking-[0.2em]">Enterprise API Connected</p>
                            </div>
-                           <div onClick={handleSprinklerToggle} className={`w-16 h-8 rounded-full relative shadow-inner border border-white/40 transition-colors cursor-pointer ${autoSprinklerOn ? 'bg-emerald-500' : 'bg-gray-400/50 dark:bg-slate-700'}`}>
-                              <div className={`absolute top-1 w-6 h-6 bg-white rounded-full shadow-md transition-all ${autoSprinklerOn ? 'right-1' : 'left-1'}`}></div>
+                           <div onClick={handleSprinklerToggle} className={`w-24 h-12 rounded-full relative shadow-inner border-2 border-white/60 transition-colors duration-500 cursor-pointer ${autoSprinklerOn ? 'bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.5)]' : 'bg-gray-400/50 dark:bg-slate-700'}`}>
+                              <div className={`absolute top-1 w-9 h-9 bg-white rounded-full shadow-[0_4px_15px_rgba(0,0,0,0.3)] transition-all duration-500 ${autoSprinklerOn ? 'right-1' : 'left-1'}`}></div>
                            </div>
                         </div>
-                        <div className="glass-panel p-6 md:p-8 rounded-[3rem]">
-                           <h4 className="font-black text-xl mb-6 flex items-center gap-2">💰 {t.costs}</h4>
-                           <div className="flex justify-between items-center border-b border-white/20 pb-4 mb-4">
-                             <span className="text-sm font-bold text-gray-600 dark:text-gray-300">Fertilizer (Monthly)</span>
-                             <span className="font-black text-xl text-red-500">฿12,500</span>
+                        <div className="glass-panel p-8 md:p-10 rounded-[3rem] shadow-xl border-white/50">
+                           <h4 className="font-black text-2xl mb-8 flex items-center gap-3 tracking-tight"><span className="text-4xl drop-shadow-md">💰</span> {t.costs}</h4>
+                           <div className="flex justify-between items-center border-b border-gray-300/50 dark:border-white/20 pb-6 mb-6">
+                             <span className="text-sm font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest">Fertilizer (Monthly)</span>
+                             <span className="font-black text-3xl text-red-600 dark:text-red-400 tracking-tight">฿12,500</span>
                            </div>
                            <div className="flex justify-between items-center">
-                             <span className="text-sm font-bold text-gray-600 dark:text-gray-300">Water Utility</span>
-                             <span className="font-black text-xl text-red-500">฿3,200</span>
+                             <span className="text-sm font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest">Water Utility</span>
+                             <span className="font-black text-3xl text-red-600 dark:text-red-400 tracking-tight">฿3,200</span>
                            </div>
                         </div>
                      </div>
                   </div>
-                </>
+                </div>
               )}
 
               {/* 5. ROBOT CONTROL */}
               {activeTab === 'robot' && (
-                <>
-                   <div className="flex justify-between items-end mb-6">
-                     <h2 className="text-3xl font-black drop-shadow-sm">{t.robots}</h2>
-                     {!isGuest && <button onClick={() => setCurrentScreen('robot_setup')} className="glass-card text-emerald-700 dark:text-emerald-300 font-bold px-4 py-2 rounded-xl text-xs hover:bg-emerald-500/10 border border-emerald-500/30">{t.manage_bots}</button>}
+                <div className="animate-[slideUp_0.6s_ease-out]">
+                   <div className="flex justify-between items-end mb-8">
+                     <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white drop-shadow-md tracking-tight">{t.robots}</h2>
+                     {!isGuest && <button onClick={() => setCurrentScreen('robot_setup')} className="glass-card text-emerald-800 dark:text-emerald-300 font-black px-6 py-3 rounded-[1.2rem] text-xs hover:bg-emerald-500/20 border-2 border-emerald-500/40 uppercase tracking-[0.2em] shadow-md hover:-translate-y-1 transition-all">{t.manage_bots}</button>}
                    </div>
-                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                     <div className="lg:col-span-2 glass-panel-strong p-4 rounded-[3rem] relative h-[400px] lg:h-[500px] flex flex-col border-2 border-emerald-500/30 shadow-2xl group">
+                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
+                     <div className="lg:col-span-2 glass-panel-strong p-5 md:p-6 rounded-[3rem] relative h-[450px] lg:h-[600px] flex flex-col border-[3px] border-emerald-500/40 shadow-[0_20px_50px_rgba(16,185,129,0.15)] group">
                         {activeRobot ? (
                           <>
-                             <div className="absolute top-6 left-6 z-20 bg-black/60 backdrop-blur-md text-white px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 border border-white/20">
-                                <span className={`w-2.5 h-2.5 rounded-full ${activeRobot.battery > 20 ? 'bg-red-500 animate-pulse' : 'bg-gray-500'}`}></span> {t.live_cam} - {activeRobot.name}
+                             <div className="absolute top-10 left-10 z-20 bg-black/80 backdrop-blur-2xl text-white px-6 py-3 rounded-[1.2rem] text-xs font-black flex items-center gap-3 border border-white/20 shadow-2xl tracking-widest uppercase">
+                                <span className={`w-3 h-3 rounded-full shadow-[0_0_10px_currentColor] ${activeRobot.battery > 20 ? 'bg-red-500 text-red-500 animate-pulse' : 'bg-gray-500 text-gray-500'}`}></span> {t.live_cam} - {activeRobot.name || 'Bot'}
                              </div>
-                             <div className="w-full h-full rounded-[2.5rem] overflow-hidden relative bg-black">
-                                <img src="https://images.unsplash.com/photo-1592982537447-6f2a6a0a38cc?auto=format&fit=crop&q=80&w=800&h=600" className="w-full h-full object-cover opacity-50" />
-                                <img src={activeRobot.image} className="absolute bottom-10 right-10 w-40 h-40 opacity-90 drop-shadow-[0_0_20px_rgba(16,185,129,0.8)]" />
-                                <div className="absolute inset-0 border-4 border-emerald-500/20 z-0 rounded-[2.5rem]"></div>
-                                <div className="absolute top-1/2 left-1/2 w-32 h-32 border border-emerald-500/30 rounded-full transform -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
-                                  <div className="w-4 h-4 border-2 border-emerald-500"></div>
+                             <div className="w-full h-full rounded-[2.5rem] overflow-hidden relative bg-gray-900 shadow-inner">
+                                <img src="https://images.unsplash.com/photo-1592982537447-6f2a6a0a38cc?auto=format&fit=crop&q=80&w=1200&h=800" className="w-full h-full object-cover opacity-60 mix-blend-luminosity filter contrast-125" />
+                                <img src={activeRobot.image} className="absolute bottom-12 right-12 w-56 h-56 opacity-95 drop-shadow-[0_15px_40px_rgba(16,185,129,0.8)] animate-float" />
+                                <div className="absolute inset-0 border-[8px] border-emerald-500/20 z-0 rounded-[2.5rem]"></div>
+                                <div className="absolute top-1/2 left-1/2 w-48 h-48 border-2 border-dashed border-emerald-500/60 rounded-full transform -translate-x-1/2 -translate-y-1/2 flex items-center justify-center shadow-[inset_0_0_30px_rgba(16,185,129,0.3)]">
+                                  <div className="w-6 h-6 border-[4px] border-emerald-400"></div>
                                 </div>
-                                <div className="absolute bottom-6 left-6 text-emerald-400 font-mono text-xs font-bold">
-                                  <p>BAT: {activeRobot.battery}%</p><p>STAT: {activeRobot.status}</p>
+                                <div className="absolute bottom-10 left-10 text-emerald-400 font-mono text-sm font-black bg-black/80 px-6 py-4 rounded-[1.5rem] backdrop-blur-xl border border-emerald-500/40 shadow-2xl tracking-widest">
+                                  <p className="mb-2">BAT: {activeRobot.battery || 0}%</p><p>STAT: {activeRobot.status || 'Standby'}</p>
                                 </div>
-                                {activeRobot.status.includes('Scan') && <div className="absolute w-full h-1 bg-emerald-500/80 shadow-[0_0_20px_rgba(16,185,129,1)] animate-scan z-10"></div>}
+                                {(activeRobot.status || '').includes('Scan') && <div className="absolute w-full h-2 bg-emerald-400 shadow-[0_0_40px_rgba(16,185,129,1)] animate-scan z-10 left-0"></div>}
                              </div>
                           </>
                         ) : (
-                          <div className="flex-1 flex items-center justify-center font-bold text-gray-500">No Robot Selected</div>
+                          <div className="flex-1 flex items-center justify-center font-black text-gray-500 text-xl tracking-widest uppercase">No Robot Selected</div>
                         )}
                      </div>
                      
-                     <div className="space-y-4 max-h-[400px] lg:max-h-[500px] overflow-y-auto custom-scroll pr-2">
+                     <div className="space-y-5 max-h-[450px] lg:max-h-[600px] overflow-y-auto custom-scroll pr-3">
                        {robots.map((r, index) => (
-                         <div key={r.id} onClick={() => {setActiveRobotIndex(index); showToast(`Connected to ${r.name}`);}} className={`glass-panel p-5 rounded-[2.5rem] flex flex-col cursor-pointer transition-all ${activeRobotIndex === index ? 'border-2 border-emerald-500 scale-[1.02] shadow-[0_0_20px_rgba(16,185,129,0.2)] bg-emerald-500/10' : 'hover:scale-[1.02] hover:bg-white/40 dark:hover:bg-slate-800/40'}`}>
-                            <div className="flex justify-between items-start mb-4">
-                              <div className="flex gap-3 items-center">
-                                <div className="w-12 h-12 bg-white/40 dark:bg-black/20 rounded-[1.2rem] p-1 border border-white/30"><img src={r.image} className="w-full h-full object-contain" /></div>
-                                <h4 className="font-black text-base">{r.name}</h4>
+                         <div key={r.id} onClick={() => {setActiveRobotIndex(index); showToast(`Connected to ${r.name || 'Robot'}`);}} className={`glass-panel p-6 rounded-[2rem] flex flex-col cursor-pointer transition-all duration-300 ${activeRobotIndex === index ? 'border-2 border-emerald-500 scale-[1.03] shadow-[0_15px_40px_rgba(16,185,129,0.3)] bg-emerald-500/10' : 'hover:scale-[1.03] hover:bg-white/50 dark:hover:bg-slate-800/50 shadow-md border-white/50'}`}>
+                            <div className="flex justify-between items-start mb-5">
+                              <div className="flex gap-4 items-center">
+                                <div className="w-16 h-16 bg-white/60 dark:bg-black/40 rounded-[1.5rem] p-2 border border-white/50 shadow-inner"><img src={r.image} className="w-full h-full object-contain drop-shadow-md" /></div>
+                                <h4 className="font-black text-lg text-gray-900 dark:text-white tracking-tight">{r.name || 'Unnamed Bot'}</h4>
                               </div>
-                              <span className={`text-[10px] font-black px-2.5 py-1 rounded-xl border ${r.battery > 20 ? 'bg-emerald-100/50 text-emerald-700 border-emerald-400/50 dark:text-emerald-300' : 'bg-red-100/50 text-red-700 border-red-400/50 dark:text-red-400'}`}>{r.battery}%</span>
+                              <span className={`text-xs font-black px-3.5 py-1.5 rounded-xl border-2 shadow-sm ${r.battery > 20 ? 'bg-emerald-100/90 text-emerald-800 border-emerald-400/60 dark:bg-emerald-900/60 dark:text-emerald-300' : 'bg-red-100/90 text-red-800 border-red-400/60 dark:bg-red-900/60 dark:text-red-300'}`}>{r.battery || 0}%</span>
                             </div>
-                            <p className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-2">{r.status || 'Standby'}</p>
+                            <p className="text-xs font-black text-gray-600 dark:text-gray-300 mb-1 bg-white/50 dark:bg-black/30 p-3 rounded-xl text-center border border-white/30 uppercase tracking-[0.2em]">{r.status || 'Standby'}</p>
                          </div>
                        ))}
-                       {robots.length === 0 && <div className="text-center p-8 glass-panel rounded-[2.5rem] font-bold text-gray-500 border-dashed border-2">No Robots Found</div>}
+                       {robots.length === 0 && <div className="text-center p-10 glass-panel rounded-[2rem] font-black text-gray-500 border-dashed border-[3px] tracking-widest uppercase">No Robots Found</div>}
                      </div>
                    </div>
-                </>
+                </div>
               )}
 
               {/* 6. SMART ALERTS */}
               {activeTab === 'alert' && (
-                <div className="max-w-3xl mx-auto">
-                   <div className="flex justify-between items-end mb-6">
-                     <h2 className="text-3xl font-black drop-shadow-sm">{t.alerts}</h2>
-                     {alerts.length > 0 && <button onClick={()=>{setAlerts([]); showToast("Alerts Cleared");}} className="text-xs font-bold text-red-500 hover:bg-red-500/10 px-3 py-1.5 rounded-lg transition-colors border border-transparent hover:border-red-500/30">{t.clear_all}</button>}
+                <div className="max-w-4xl mx-auto animate-[slideUp_0.6s_ease-out]">
+                   <div className="flex justify-between items-end mb-8">
+                     <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white drop-shadow-md tracking-tight">{t.alerts}</h2>
+                     {alerts.length > 0 && <button onClick={()=>{setAlerts([]); showToast("Alerts Cleared");}} className="text-xs font-black text-red-600 hover:bg-red-500/10 px-5 py-2.5 rounded-xl transition-all border border-transparent hover:border-red-500/30 uppercase tracking-widest shadow-sm hover:-translate-y-0.5">{t.clear_all}</button>}
                    </div>
-                   <div className="flex gap-2 overflow-x-auto pb-4 hide-scrollbar">
+                   <div className="flex gap-3 overflow-x-auto pb-6 hide-scrollbar">
                     {['all', 'urgent', 'warn', 'info'].map(f => (
-                       <button key={f} onClick={()=>setAlertFilter(f)} className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${alertFilter===f ? 'bg-gray-800 dark:bg-emerald-600 text-white shadow-md border border-gray-700 dark:border-emerald-400' : 'glass-card text-gray-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-slate-700/60'}`}>
+                       <button key={f} onClick={()=>setAlertFilter(f)} className={`px-8 py-3.5 rounded-2xl text-xs font-black transition-all duration-300 whitespace-nowrap tracking-[0.2em] uppercase shadow-md ${alertFilter===f ? 'bg-gray-900 dark:bg-emerald-600 text-white border border-gray-700 dark:border-emerald-400 scale-105' : 'glass-card text-gray-700 dark:text-gray-200 hover:bg-white/60 dark:hover:bg-slate-700/60 border border-white/50'}`}>
                           {f==='all' ? t.filter_all : f==='urgent' ? t.filter_critical : f==='warn' ? t.filter_warning : t.filter_info}
                        </button>
                     ))}
                    </div>
-                   <div className="space-y-4">
+                   <div className="space-y-5 md:space-y-6">
                      {filteredAlerts.map(a => (
-                       <div key={a.id} onClick={() => {setAlerts(alerts.filter(al => al.id !== a.id)); showToast("Dismissed");}} className="glass-panel p-5 rounded-[2.5rem] flex items-center gap-4 hover:scale-[1.01] transition-transform cursor-pointer relative overflow-hidden group">
-                          <div className="absolute right-4 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 text-gray-400 dark:text-gray-500 font-bold text-xs transition-opacity">Click to dismiss</div>
-                          <div className={`text-3xl p-3 rounded-[1.5rem] border border-white/30 ${a.type==='urgent'?'bg-red-500/20':a.type==='warn'?'bg-yellow-500/20':'bg-blue-500/20'}`}>
+                       <div key={a.id} onClick={() => {setAlerts(alerts.filter(al => al.id !== a.id)); showToast("Dismissed");}} className="glass-panel p-6 md:p-8 rounded-[2rem] flex items-center gap-6 hover:scale-[1.02] transition-transform duration-300 cursor-pointer relative overflow-hidden group shadow-md border border-white/60">
+                          <div className="absolute right-6 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 text-gray-400 dark:text-gray-500 font-black text-[10px] transition-opacity uppercase tracking-widest bg-white/80 dark:bg-black/50 px-4 py-2 rounded-xl backdrop-blur-md border border-white/30">Dismiss ✕</div>
+                          <div className={`text-4xl p-5 rounded-[1.5rem] border border-white/60 shadow-inner ${a.type==='urgent'?'bg-red-500/20':a.type==='warn'?'bg-yellow-500/20':'bg-blue-500/20'}`}>
                             {a.type === 'urgent' ? '🔴' : a.type === 'warn' ? '🟡' : '🟢'}
                           </div>
-                          <div className="flex-1">
-                             <div className="flex justify-between items-start mb-1">
-                               <h4 className={`font-black text-sm md:text-base ${a.type === 'urgent' ? 'text-red-600 dark:text-red-400' : 'text-gray-800 dark:text-white'}`}>{a.text}</h4>
-                               <span className="text-[10px] font-bold bg-white/40 dark:bg-black/30 px-2 py-1 rounded-lg border border-white/20 whitespace-nowrap">{a.time}</span>
+                          <div className="flex-1 pr-24">
+                             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 gap-3">
+                               <h4 className={`font-black text-base md:text-xl tracking-tight ${a.type === 'urgent' ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}`}>{a.text}</h4>
+                               <span className="text-[10px] font-black bg-white/60 dark:bg-black/50 px-4 py-1.5 rounded-lg border border-gray-300 dark:border-white/20 whitespace-nowrap text-gray-800 dark:text-gray-300 uppercase tracking-widest shadow-sm">{a.time}</span>
                              </div>
-                             <span className="inline-block text-[10px] font-black bg-white/50 dark:bg-black/40 px-3 py-1.5 rounded-xl border border-white/30">{a.zone}</span>
+                             <span className="inline-block text-[10px] font-black bg-gray-900/10 dark:bg-black/60 px-4 py-2 rounded-xl border border-gray-300 dark:border-white/20 uppercase tracking-[0.2em] text-gray-800 dark:text-gray-200">{a.zone}</span>
                           </div>
                        </div>
                      ))}
-                     {filteredAlerts.length === 0 && <div className="text-center text-gray-500 dark:text-gray-400 font-bold mt-10 glass-panel p-8 rounded-[3rem] border-dashed border-2 border-gray-300 dark:border-slate-700">No alerts found. All good! ✨</div>}
+                     {filteredAlerts.length === 0 && <div className="text-center text-gray-500 dark:text-gray-400 font-black mt-12 glass-panel p-12 rounded-[3rem] border-dashed border-[3px] border-gray-300 dark:border-slate-700 tracking-widest text-lg uppercase">No alerts found. All good! ✨</div>}
                    </div>
                 </div>
               )}
 
               {/* 7. REPORTS */}
               {activeTab === 'report' && (
-                <>
-                   <h2 className="text-3xl font-black mb-6 drop-shadow-sm">{t.reports}</h2>
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                     <div className="glass-panel p-8 rounded-[3rem] flex flex-col justify-center items-center min-h-[300px] border-dashed border-2 border-emerald-500/30">
-                        <span className="text-6xl mb-6">📊</span>
-                        <h3 className="font-black text-2xl mb-2 text-center">Interactive Export</h3>
-                        <p className="text-sm font-bold text-gray-500 mb-8 text-center">Download current data</p>
-                        <div className="flex flex-col sm:flex-row gap-4 w-full justify-center">
-                           <button onClick={handleExportPDF} className="glass-card bg-red-500/10 text-red-600 dark:text-red-400 font-bold px-6 py-3 rounded-2xl text-sm border-red-500/30 hover:bg-red-500/20 shadow-md">📑 {t.export_pdf}</button>
-                           <button onClick={handleExportExcel} className="glass-card bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold px-6 py-3 rounded-2xl text-sm border-emerald-500/30 hover:bg-emerald-500/20 shadow-md">📗 {t.export_excel}</button>
+                <div className="animate-[slideUp_0.6s_ease-out]">
+                   <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-8 drop-shadow-md tracking-tight">{t.reports}</h2>
+                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                     <div className="glass-panel p-8 md:p-12 rounded-[3rem] flex flex-col justify-center items-center min-h-[400px] border-dashed border-[3px] border-emerald-500/40 bg-white/30 shadow-2xl group">
+                        <span className="text-8xl mb-8 drop-shadow-2xl group-hover:scale-110 transition-transform duration-500">📊</span>
+                        <h3 className="font-black text-3xl mb-3 text-center text-gray-900 dark:text-white tracking-tight">Interactive Export</h3>
+                        <p className="text-xs font-black text-gray-500 dark:text-gray-400 mb-12 text-center uppercase tracking-widest">Download current data</p>
+                        <div className="flex flex-col sm:flex-row gap-5 w-full justify-center">
+                           <button onClick={handleExportPDF} className="glass-card bg-red-500/10 text-red-600 dark:text-red-400 font-black px-8 py-4 rounded-[1.5rem] text-sm border-2 border-red-500/40 hover:bg-red-500/20 shadow-xl hover:-translate-y-1.5 transition-all duration-300 uppercase tracking-widest">📑 {t.export_pdf}</button>
+                           <button onClick={handleExportExcel} className="glass-card bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-black px-8 py-4 rounded-[1.5rem] text-sm border-2 border-emerald-500/40 hover:bg-emerald-500/20 shadow-xl hover:-translate-y-1.5 transition-all duration-300 uppercase tracking-widest">📗 {t.export_excel}</button>
                         </div>
                      </div>
-                     <div className="glass-panel-strong p-8 rounded-[3rem] bg-gradient-to-br from-purple-500/10 to-blue-500/10">
-                        <h3 className="font-black text-xl mb-6">{t.yield_comp}</h3>
-                        <div className="space-y-6">
+                     <div className="glass-panel-strong p-8 md:p-12 rounded-[3rem] bg-gradient-to-br from-purple-500/10 to-blue-500/10 shadow-2xl border-white/60">
+                        <h3 className="font-black text-2xl mb-10 tracking-tight">{t.yield_comp}</h3>
+                        <div className="space-y-8">
                            {plantZones.map((crop, i) => {
                              const mockGrowth = [12, 5, -2, 8][i % 4];
                              const gStr = mockGrowth >= 0 ? `+${mockGrowth}%` : `${mockGrowth}%`;
                              return (
-                               <div key={i}>
-                                 <div className="flex justify-between text-xs font-black mb-2"><span>{crop.crop}</span> <span className={mockGrowth >= 0 ? 'text-emerald-600' : 'text-red-500'}>{gStr}</span></div>
-                                 <div className="w-full h-4 bg-white/30 dark:bg-black/30 rounded-full shadow-inner border border-white/10 overflow-hidden"><div className={`h-full rounded-full shadow-[0_0_10px_rgba(255,255,255,0.5)] ${mockGrowth >= 0 ? 'bg-emerald-500' : 'bg-orange-400'}`} style={{width: `${crop.health}%`}}></div></div>
+                               <div key={i} className="group">
+                                 <div className="flex justify-between text-sm font-black mb-3 text-gray-900 dark:text-white"><span className="tracking-wide uppercase"><span className="text-xl mr-2 animate-float inline-block">{crop.emoji}</span> {crop.name}</span> <span className={`text-base ${mockGrowth >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'}`}>{gStr}</span></div>
+                                 <div className="w-full h-5 bg-white/50 dark:bg-black/50 rounded-full shadow-inner border border-white/30 overflow-hidden"><div className={`h-full rounded-full shadow-[0_0_15px_rgba(255,255,255,0.6)] transition-all duration-1000 group-hover:brightness-110 ${mockGrowth >= 0 ? 'bg-emerald-500' : 'bg-orange-500'}`} style={{width: `${crop.health}%`}}></div></div>
                                </div>
                              );
                            })}
                         </div>
                      </div>
                   </div>
-                </>
+                </div>
               )}
 
               {/* 8. USER MANAGEMENT & MULTI-FARM */}
               {activeTab === 'user' && (
-                <div className="max-w-2xl mx-auto space-y-6">
-                   <h2 className="text-3xl font-black mb-6 drop-shadow-sm">{t.settings}</h2>
+                <div className="max-w-2xl mx-auto space-y-6 md:space-y-8 animate-[slideUp_0.6s_ease-out]">
+                   <h2 className="text-3xl md:text-4xl font-black text-gray-900 dark:text-white mb-8 drop-shadow-md tracking-tight">{t.settings}</h2>
                    
-                   <div className="glass-panel-strong p-8 rounded-[3rem] flex flex-col md:flex-row items-center gap-8 shadow-xl">
-                      <div className="relative w-32 h-32 group cursor-pointer" onClick={() => !isGuest && profFileRef.current.click()}>
-                        <div className="absolute inset-0 rounded-full bg-white/40 dark:bg-black/40 backdrop-blur-sm border-2 border-emerald-400/50 group-hover:scale-105 transition-all shadow-inner"></div>
-                        <img src={userData.avatar} className="w-full h-full rounded-full object-cover p-2 relative z-10 drop-shadow-md bg-white/50" />
-                        {!isGuest && <div className="absolute bottom-0 right-0 z-20 bg-emerald-500/90 text-white p-2.5 rounded-full shadow-lg"><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path></svg></div>}
+                   <div className="glass-panel-strong p-8 md:p-10 rounded-[3rem] flex flex-col md:flex-row items-center gap-8 md:gap-10 shadow-2xl border-white/70">
+                      <div className="relative w-40 h-40 group cursor-pointer" onClick={() => !isGuest && profFileRef.current.click()}>
+                        <div className="absolute inset-0 rounded-[2rem] bg-white/60 dark:bg-black/50 backdrop-blur-md border-[3px] border-emerald-400/60 group-hover:scale-105 transition-transform duration-300 shadow-inner"></div>
+                        <img src={userData.avatar} className="w-full h-full rounded-[2rem] object-cover p-3.5 relative z-10 drop-shadow-xl bg-white/40" />
+                        {!isGuest && <div className="absolute -bottom-3 -right-3 z-20 bg-emerald-500 text-white p-3.5 rounded-xl shadow-[0_10px_20px_rgba(16,185,129,0.5)] group-hover:scale-110 transition-transform"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path></svg></div>}
                         <input type="file" ref={profFileRef} className="hidden" accept="image/*" onChange={(e)=>{ const r = new FileReader(); r.onload=(ev)=>{setUserData({...userData, avatar: ev.target.result}); showToast("Avatar changed");}; r.readAsDataURL(e.target.files[0]); }} />
                       </div>
-                      <div className="flex-1 w-full space-y-4">
-                        <div><label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 ml-2 mb-1 block">{t.name}</label><input disabled={isGuest} type="text" className="w-full glass-input p-4 rounded-[1.5rem] font-black text-lg disabled:opacity-50" value={editProfileName} onChange={e=>setEditProfileName(e.target.value)} /></div>
-                        <div><label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 ml-2 mb-1 block">{t.farm_name}</label><input disabled={true} type="text" className="w-full glass-input p-4 rounded-[1.5rem] font-black text-lg opacity-50 bg-gray-200/50 cursor-not-allowed" value={userData.farmName} title="Change farm name by adding or switching farms below." /></div>
+                      <div className="flex-1 w-full space-y-5">
+                        <div><label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 ml-3 mb-2 block">{t.name}</label><input disabled={isGuest} type="text" className="w-full glass-input p-4 rounded-[1.5rem] font-black text-xl disabled:opacity-50 text-gray-900 dark:text-white shadow-inner" value={editProfileName} onChange={e=>setEditProfileName(e.target.value)} /></div>
+                        <div><label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 dark:text-gray-400 ml-3 mb-2 block">{t.farm_name}</label><input disabled={isGuest} type="text" className="w-full glass-input p-4 rounded-[1.5rem] font-black text-xl disabled:opacity-50 text-gray-900 dark:text-white shadow-inner" value={userData.farmName} onChange={e=>{
+                            const newFarmName = e.target.value;
+                            const updatedFarms = userFarms.map(f => f.name === userData.farmName ? {...f, name: newFarmName} : f);
+                            setUserData({...userData, farmName: newFarmName, farms: updatedFarms});
+                        }} /></div>
                       </div>
                    </div>
 
-                   <div className="flex gap-4">
-                     {!isGuest && <button onClick={handleSaveProfile} className="flex-1 bg-emerald-500/90 text-white py-4 rounded-[2rem] font-black shadow-lg hover:-translate-y-1 transition-transform border border-emerald-400/50">{t.save}</button>}
-                     <button onClick={onLogout} className="flex-1 glass-card bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30 py-4 rounded-[2rem] font-black hover:bg-red-500/20">{t.logout}</button>
+                   <div className="flex gap-5">
+                     {!isGuest && <button onClick={handleSaveProfile} className="flex-1 bg-emerald-500 text-white py-4 rounded-[1.5rem] font-black shadow-[0_10px_30px_rgba(16,185,129,0.3)] hover:-translate-y-1.5 transition-all duration-300 border border-emerald-400/50 tracking-widest uppercase text-sm">{t.save}</button>}
+                     <button onClick={onLogout} className="flex-1 glass-card bg-red-500/10 text-red-600 dark:text-red-400 border-2 border-red-500/30 py-4 rounded-[1.5rem] font-black hover:bg-red-500/20 hover:-translate-y-1.5 transition-all duration-300 tracking-widest uppercase text-sm shadow-md">{t.logout}</button>
                    </div>
 
-                   <div className="glass-panel p-6 md:p-8 rounded-[2.5rem] mt-8">
-                      <h3 className="font-black text-lg mb-4 flex justify-between items-center">
+                   <div className="glass-panel p-8 md:p-10 rounded-[3rem] mt-10 shadow-xl border-white/50">
+                      <h3 className="font-black text-xl mb-6 flex justify-between items-center tracking-tight">
                         Farms Managed 
-                        <span className="text-[10px] font-bold bg-white/40 dark:bg-black/30 px-3 py-1.5 rounded-lg border border-white/30">{t.multi_farm}</span>
+                        <span className="text-[10px] font-black tracking-widest bg-white/70 dark:bg-black/50 px-4 py-2 rounded-xl border border-gray-300 dark:border-white/30 text-gray-800 dark:text-gray-200 uppercase shadow-sm">{t.multi_farm}</span>
                       </h3>
-                      <div className="space-y-3">
+                      <div className="space-y-4">
                          {userFarms.map(f => (
-                           <div key={f.id} onClick={() => handleSwitchFarm(f)} className={`glass-card p-4 rounded-[1.5rem] flex items-center justify-between cursor-pointer transition-all hover:scale-[1.02] ${userData.farmName === f.name ? 'border-emerald-500/50 bg-emerald-500/10' : 'border-transparent dark:border-slate-700 hover:border-gray-300'}`}>
-                              <span className="font-black">{f.name}</span>
+                           <div key={f.id} onClick={() => handleSwitchFarm(f)} className={`glass-card p-5 rounded-[1.5rem] flex items-center justify-between cursor-pointer transition-all duration-300 hover:scale-[1.03] shadow-md ${userData.farmName === f.name ? 'border-[3px] border-emerald-500/60 bg-emerald-500/10' : 'border-[3px] border-transparent dark:border-slate-700 hover:border-gray-300 dark:hover:border-gray-500'}`}>
+                              <span className="font-black text-lg">{f.name}</span>
                               {userData.farmName === f.name ? (
-                                  <span className="text-[10px] text-emerald-600 font-black px-2 py-1 bg-white/50 dark:bg-black/50 rounded-lg shadow-sm border border-emerald-200 dark:border-emerald-800">ACTIVE</span>
+                                  <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-black px-3 py-1.5 bg-emerald-100/90 dark:bg-emerald-900/60 rounded-xl shadow-sm border border-emerald-300 dark:border-emerald-700 tracking-widest uppercase">ACTIVE</span>
                               ) : (
-                                  <span className="text-[10px] text-gray-500 dark:text-gray-400 font-bold px-2 py-1 bg-white/30 dark:bg-black/30 rounded-lg border border-gray-200 dark:border-slate-700 hover:bg-white/50">SWITCH</span>
+                                  <span className="text-[10px] text-gray-600 dark:text-gray-300 font-black px-3 py-1.5 bg-white/60 dark:bg-black/40 rounded-xl border border-gray-300 dark:border-slate-600 hover:bg-white/90 tracking-widest uppercase shadow-sm">SWITCH</span>
                               )}
                            </div>
                          ))}
                          
                          {isAddingFarm && !isGuest ? (
-                             <div className="glass-card p-4 rounded-[1.5rem] flex gap-2 border-emerald-500/30">
-                                 <input type="text" autoFocus placeholder="Enter farm name..." value={newFarmName} onChange={(e)=>setNewFarmName(e.target.value)} className="flex-1 bg-white/50 dark:bg-black/30 border border-white/40 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-bold outline-none focus:border-emerald-500" />
-                                 <button onClick={handleAddFarm} className="bg-emerald-500 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-emerald-600">Add</button>
-                                 <button onClick={()=>setIsAddingFarm(false)} className="bg-gray-400 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-gray-500">Cancel</button>
+                             <div className="glass-card p-5 rounded-[1.5rem] flex gap-3 border-[3px] border-emerald-500/40 shadow-inner bg-white/50 dark:bg-black/30">
+                                 <input type="text" autoFocus placeholder="Enter farm name..." value={newFarmName} onChange={(e)=>setNewFarmName(e.target.value)} className="flex-1 bg-white/80 dark:bg-black/60 border border-white/70 dark:border-slate-600 rounded-[1.2rem] px-4 py-3 text-sm font-black outline-none focus:border-emerald-500 text-gray-900 dark:text-white shadow-inner" />
+                                 <button onClick={handleAddFarm} className="bg-emerald-500 text-white px-5 py-3 rounded-[1.2rem] text-xs font-black hover:bg-emerald-600 tracking-widest uppercase shadow-md transition-colors">Add</button>
+                                 <button onClick={()=>setIsAddingFarm(false)} className="bg-gray-400 dark:bg-slate-600 text-white px-5 py-3 rounded-[1.2rem] text-xs font-black hover:bg-gray-500 tracking-widest uppercase shadow-md transition-colors">Cancel</button>
                              </div>
                          ) : !isGuest && (
-                             <div onClick={()=>setIsAddingFarm(true)} className="glass-card p-4 rounded-[1.5rem] flex items-center justify-center border-dashed border-2 border-gray-300 dark:border-slate-700 cursor-pointer text-gray-500 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-400 font-black text-sm transition-colors">
+                             <div onClick={()=>setIsAddingFarm(true)} className="glass-card p-5 rounded-[1.5rem] flex items-center justify-center border-dashed border-[3px] border-gray-400 dark:border-slate-600 cursor-pointer text-gray-600 dark:text-gray-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:border-emerald-400 hover:bg-emerald-500/10 font-black text-sm transition-all duration-300 tracking-widest uppercase shadow-sm hover:shadow-md">
                                 + Add New Farm
                              </div>
                          )}
@@ -1128,6 +1181,42 @@
               )}
 
             </div>
+            
+            {/* Zone Edit Modal */}
+            {isEditingZones && (
+              <div className="fixed inset-0 z-[700] flex items-center justify-center backdrop-blur-xl bg-black/60 p-4" onClick={() => setIsEditingZones(false)}>
+                 <div className="glass-panel-strong w-full max-w-md rounded-[3rem] p-8 md:p-10 modal-enter shadow-[0_30px_80px_rgba(0,0,0,0.5)] border border-white/50" onClick={e => e.stopPropagation()}>
+                    <h3 className="text-3xl font-black mb-8 text-gray-900 dark:text-white drop-shadow-md tracking-tight text-center">{t.edit_zones}</h3>
+                    <div className="space-y-5 max-h-[50vh] overflow-y-auto custom-scroll pr-3">
+                       {editingZonesData.map((z, idx) => (
+                          <div key={z.id} className="glass-card p-5 rounded-[1.5rem] flex gap-4 items-center shadow-md border border-white/60">
+                             <div className="w-20 shrink-0">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 ml-1 mb-2 block text-center">{t.zone_emoji}</label>
+                                <input type="text" className="w-full glass-input p-3 rounded-[1.2rem] text-center text-3xl shadow-inner font-black" value={z.emoji} onChange={e => {
+                                   const newZones = [...editingZonesData];
+                                   newZones[idx].emoji = e.target.value;
+                                   setEditingZonesData(newZones);
+                                }} />
+                             </div>
+                             <div className="flex-1">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 ml-2 mb-2 block">{t.zone_name}</label>
+                                <input type="text" className="w-full glass-input p-4 rounded-[1.2rem] font-black text-sm text-gray-900 dark:text-white shadow-inner tracking-wide" value={z.name} onChange={e => {
+                                   const newZones = [...editingZonesData];
+                                   newZones[idx].name = e.target.value;
+                                   setEditingZonesData(newZones);
+                                }} />
+                             </div>
+                          </div>
+                       ))}
+                    </div>
+                    <div className="flex gap-4 mt-10">
+                       <button onClick={() => setIsEditingZones(false)} className="flex-1 glass-card py-4 rounded-[1.5rem] font-black hover:bg-white/70 tracking-widest uppercase text-sm shadow-md transition-colors">{t.cancel}</button>
+                       <button onClick={() => { setPlantZones(editingZonesData); setIsEditingZones(false); showToast(t.save); }} className="flex-1 bg-emerald-500 text-white py-4 rounded-[1.5rem] font-black shadow-[0_10px_30px_rgba(16,185,129,0.3)] border border-emerald-400/50 hover:bg-emerald-600 hover:-translate-y-1 transition-transform tracking-widest uppercase text-sm">{t.save}</button>
+                    </div>
+                 </div>
+              </div>
+            )}
+
           </main>
         </div>
       );
